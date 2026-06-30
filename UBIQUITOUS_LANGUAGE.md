@@ -48,7 +48,7 @@ Glossary for v1 (lean validation MVP). The terse canonical version for tooling l
 - A **Tier** grants access to every **Dance** whose minimum tier ≤ that Tier (cumulative ladder: T1 ⊂ T2 ⊂ T3).
 - A **Dance** contains many **Videos**; each **Video** belongs to exactly one **Dance** and one **Level**, and carries 0..n **Tags**.
 - An **Account** may hold up to 3 concurrent **Sessions**.
-- **Playback** of a **Video** is permitted only if the Subscriber's **Entitlement** includes the Video's **Dance** and the Subscription is trialing or active.
+- **Playback** of a **Video** is permitted only if the Subscriber's **Entitlement** includes the Video's **Dance** and the Subscription grants access (status trialing, active, or past-due).
 
 ## Flagged ambiguities
 

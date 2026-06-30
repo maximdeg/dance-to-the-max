@@ -4,16 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-This is a **greenfield project**. The repository currently contains only `specifications.md` — there is no source code, build system, dependency manifest, test suite, or git history yet. No technology stack has been chosen.
+This is a **pre-implementation** project: the product has been refined and documented, but no application code exists yet. The stack is decided (ADR-0006): **TypeScript + React Router v7 + Effect + Postgres/Drizzle + Vitest**, with **Stripe** for billing and a **hosted video provider** for streaming.
 
-Because of this:
-- There are **no build/lint/test commands** to document yet. When the stack is chosen, add the real commands here.
-- Read these in order; later docs refine earlier ones:
-  1. `CONTEXT.md` — canonical domain glossary (use these exact terms; e.g. **Tier** = subscription, **Level** = difficulty — never mix them).
-  2. `UBIQUITOUS_LANGUAGE.md` — the glossary plus entity relationships, flagged ambiguities, and an example dialogue.
-  3. `docs/adr/` — architecture decision records (the deliberate deviations from the raw spec, e.g. hosted video provider, 3 dance-gated tiers).
-  4. `refinement-decisions.md` — the running log of v1 product decisions + the backlog of deferred issues.
-  5. `specifications.md` — the original Spanish wishlist (full vision; **superseded by the above for v1 scope**).
+- **Build/lint/test commands** don't exist until the app is scaffolded. Per the conventions the engineering skills assume, expect `npm run typecheck` and `npm test` once the scaffold lands — update this section with the real commands then.
+- **Read these in order; later docs refine earlier ones:**
+  1. `PRD.md` — the v1 product requirements (problem, solution, 34 user stories, implementation & testing decisions, scope).
+  2. `CONTEXT.md` — canonical domain glossary (use these exact terms; e.g. **Tier** = subscription, **Level** = difficulty — never mix them).
+  3. `UBIQUITOUS_LANGUAGE.md` — the glossary plus entity relationships, flagged ambiguities, and an example dialogue.
+  4. `docs/adr/` — architecture decision records (the deliberate deviations from the raw spec: web-first, hosted video, 3 dance-gated tiers, session cap, bilingual, the stack).
+  5. `refinement-decisions.md` — the running log of v1 product decisions + the backlog of deferred issues.
+  6. `specifications.md` — the original Spanish wishlist (full vision; **superseded by the above for v1 scope**).
+
+> **Note — the three sections below describe the *original full vision* from `specifications.md`.** For **v1 scope** they are superseded by `PRD.md` / `CONTEXT.md` / `refinement-decisions.md` / `docs/adr/`, which narrow v1 to a lean paywalled catalog (3 dance-gated Tiers; no comments, likes, premium-loop, or full device management yet) and revise key terms (3 Tiers not 4 packages; gating by **Dance** not Level). Treat the sections below as longer-term context only.
 
 ## Product overview
 
