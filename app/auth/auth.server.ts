@@ -39,6 +39,13 @@ export async function requireAccount(request: Request): Promise<Account> {
   return account;
 }
 
+/** The id of the request's current Session, if any (from the signed cookie). */
+export async function getCurrentSessionId(
+  request: Request,
+): Promise<string | undefined> {
+  return readSessionIdCookie(request);
+}
+
 /**
  * Create a login Session (enforcing the 3-concurrent-Session cap) and return
  * the `Set-Cookie` header value.

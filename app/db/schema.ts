@@ -72,3 +72,27 @@ export const sessions = pgTable(
     ),
   ],
 );
+
+/**
+ * Single-use, time-limited password-reset tokens (#5). Only the SHA-256 hash of
+ * the token is stored — the raw token lives only in the email — so a database
+ * leak can't be replayed. `usedAt` enforces single use; `expiresAt` the TTL.
+ */
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("password_reset_tokens_hash_unique").on(table.tokenHash),
+  ],
+);

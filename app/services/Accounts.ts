@@ -3,6 +3,7 @@ import { Data, Effect } from "effect";
 import { accounts } from "~/db/schema";
 import { Database } from "./Database";
 import { hashPassword, verifyPassword } from "./password";
+import { destroyOtherSessions } from "./Sessions";
 
 export type Account = typeof accounts.$inferSelect;
 
@@ -85,4 +86,46 @@ export const findAccountById = (
       db.select().from(accounts).where(eq(accounts.id, id)).limit(1),
     );
     return rows[0] ?? null;
+  });
+
+/**
+ * Change the password of an authenticated Account after verifying the current
+ * one. Every OTHER Session is invalidated (the caller passes the Session to
+ * keep), so a password change signs the account out everywhere else.
+ */
+export const changePassword = (
+  accountId: string,
+  currentPassword: string,
+  newPassword: string,
+  keepSessionId: string,
+): Effect.Effect<Account, InvalidCredentials, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+
+    const account = yield* findAccountById(accountId);
+    if (!account) {
+      return yield* new InvalidCredentials();
+    }
+
+    const ok = yield* verifyPassword(currentPassword, account.passwordHash);
+    if (!ok) {
+      return yield* new InvalidCredentials();
+    }
+
+    const passwordHash = yield* hashPassword(newPassword);
+    const updated = yield* Effect.promise(() =>
+      db
+        .update(accounts)
+        .set({ passwordHash })
+        .where(eq(accounts.id, accountId))
+        .returning(),
+    );
+
+    yield* destroyOtherSessions(accountId, keepSessionId);
+
+    const next = updated[0];
+    if (!next) {
+      return yield* Effect.dieMessage("account update returned no row");
+    }
+    return next;
   });
