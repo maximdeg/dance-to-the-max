@@ -15,6 +15,13 @@
       "when": 1783335716858,
       "tag": "0001_nosy_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783337987352,
+      "tag": "0002_tired_ezekiel_stane",
+      "breakpoints": true
     }
   ]
 }

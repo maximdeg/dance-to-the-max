@@ -1,4 +1,5 @@
 import {
+  index,
   pgEnum,
   pgTable,
   serial,
@@ -44,18 +45,30 @@ export const accounts = pgTable(
 
 /**
  * A persisted login Session. The signed cookie only carries this row's id, so
- * logout (and, later, the 3-concurrent-Session cap in #4) is enforced
- * server-side by inserting/deleting rows here.
+ * logout and the 3-concurrent-Session cap (#4) are enforced server-side by
+ * inserting/deleting rows here. `lastSeenAt` is the activity clock the cap uses
+ * to pick the least-recently-active Session to evict and to expire idle ones.
  */
-export const sessions = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  accountId: uuid("account_id")
-    .notNull()
-    .references(() => accounts.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  // Serves the cap's per-account queries: purge-expired, count, and
+  // oldest-first eviction all filter by account_id and order by last_seen_at.
+  (table) => [
+    index("sessions_account_last_seen_idx").on(
+      table.accountId,
+      table.lastSeenAt,
+    ),
+  ],
+);
