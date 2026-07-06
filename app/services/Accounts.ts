@@ -1,0 +1,88 @@
+import { eq } from "drizzle-orm";
+import { Data, Effect } from "effect";
+import { accounts } from "~/db/schema";
+import { Database } from "./Database";
+import { hashPassword, verifyPassword } from "./password";
+
+export type Account = typeof accounts.$inferSelect;
+
+export class EmailAlreadyInUse extends Data.TaggedError("EmailAlreadyInUse")<{
+  readonly email: string;
+}> {}
+
+export class InvalidCredentials extends Data.TaggedError(
+  "InvalidCredentials",
+)<{}> {}
+
+const normalizeEmail = (email: string): string => email.trim().toLowerCase();
+
+/**
+ * Create an Account. Public signup ALWAYS assigns the `subscriber` role — this
+ * function takes no role argument, so there is no way for a Visitor to request
+ * `admin`/`super_admin`. Elevation happens through separate, privileged flows.
+ */
+export const signup = (
+  email: string,
+  password: string,
+): Effect.Effect<Account, EmailAlreadyInUse, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const normalized = normalizeEmail(email);
+
+    const existing = yield* Effect.promise(() =>
+      db.select().from(accounts).where(eq(accounts.email, normalized)).limit(1),
+    );
+    if (existing.length > 0) {
+      return yield* new EmailAlreadyInUse({ email: normalized });
+    }
+
+    const passwordHash = yield* hashPassword(password);
+    const inserted = yield* Effect.promise(() =>
+      db
+        .insert(accounts)
+        .values({ email: normalized, passwordHash, role: "subscriber" })
+        .returning(),
+    );
+
+    const account = inserted[0];
+    if (!account) {
+      return yield* Effect.dieMessage("account insert returned no row");
+    }
+    return account;
+  });
+
+export const verifyCredentials = (
+  email: string,
+  password: string,
+): Effect.Effect<Account, InvalidCredentials, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const normalized = normalizeEmail(email);
+
+    const rows = yield* Effect.promise(() =>
+      db.select().from(accounts).where(eq(accounts.email, normalized)).limit(1),
+    );
+    const account = rows[0];
+    // Verify a hash even when the account is missing would be ideal to avoid
+    // user-enumeration timing; for v1 the same error is returned either way.
+    if (!account) {
+      return yield* new InvalidCredentials();
+    }
+
+    const ok = yield* verifyPassword(password, account.passwordHash);
+    if (!ok) {
+      return yield* new InvalidCredentials();
+    }
+    return account;
+  });
+
+export const findAccountById = (
+  id: string,
+): Effect.Effect<Account | null, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const rows = yield* Effect.promise(() =>
+      db.select().from(accounts).where(eq(accounts.id, id)).limit(1),
+    );
+    return rows[0] ?? null;
+  });
