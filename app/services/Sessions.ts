@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, ne } from "drizzle-orm";
 import { Effect } from "effect";
 import { sessions } from "~/db/schema";
 import { Database } from "./Database";
@@ -134,5 +134,39 @@ export const destroySession = (
     const db = yield* Database;
     yield* Effect.promise(() =>
       db.delete(sessions).where(eq(sessions.id, id)),
+    );
+  });
+
+/** End every Session for an Account (used when a password is reset). */
+export const destroyAccountSessions = (
+  accountId: string,
+): Effect.Effect<void, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    yield* Effect.promise(() =>
+      db.delete(sessions).where(eq(sessions.accountId, accountId)),
+    );
+  });
+
+/**
+ * End every Session for an Account except the one to keep (used on a password
+ * change, so the Subscriber stays logged in on the device they changed it from
+ * while every other device is signed out).
+ */
+export const destroyOtherSessions = (
+  accountId: string,
+  keepSessionId: string,
+): Effect.Effect<void, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    yield* Effect.promise(() =>
+      db
+        .delete(sessions)
+        .where(
+          and(
+            eq(sessions.accountId, accountId),
+            ne(sessions.id, keepSessionId),
+          ),
+        ),
     );
   });

@@ -56,6 +56,9 @@ export default function LogIn({ actionData }: Route.ComponentProps) {
         <button type="submit">Log in</button>
       </Form>
       <p>
+        <Link to="/forgot-password">Forgot your password?</Link>
+      </p>
+      <p>
         No account yet? <Link to="/signup">Sign up</Link>
       </p>
     </main>

@@ -2,10 +2,13 @@ import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import { makeTestDatabaseLayer } from "../../test/db";
 import {
+  changePassword,
   EmailAlreadyInUse,
+  InvalidCredentials,
   signup,
   verifyCredentials,
 } from "./Accounts";
+import { establishSession, findSessionById } from "./Sessions";
 
 describe("signup", () => {
   it("creates an Account with the subscriber role and a normalized email", async () => {
@@ -82,5 +85,90 @@ describe("verifyCredentials", () => {
       ),
     );
     expect(Either.isLeft(result)).toBe(true);
+  });
+});
+
+describe("changePassword", () => {
+  it("changes the password and signs out every OTHER session", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const account = await Effect.runPromise(
+      signup("change@example.com", "password123").pipe(Effect.provide(layer)),
+    );
+    const current = await Effect.runPromise(
+      establishSession(account.id).pipe(Effect.provide(layer)),
+    );
+    const other = await Effect.runPromise(
+      establishSession(account.id).pipe(Effect.provide(layer)),
+    );
+
+    await Effect.runPromise(
+      changePassword(
+        account.id,
+        "password123",
+        "newpassword456",
+        current.id,
+      ).pipe(Effect.provide(layer)),
+    );
+
+    // New password works, old one no longer does.
+    await Effect.runPromise(
+      verifyCredentials("change@example.com", "newpassword456").pipe(
+        Effect.provide(layer),
+      ),
+    );
+    const oldLogin = await Effect.runPromise(
+      verifyCredentials("change@example.com", "password123").pipe(
+        Effect.provide(layer),
+        Effect.either,
+      ),
+    );
+    expect(Either.isLeft(oldLogin)).toBe(true);
+
+    // The device that changed it stays signed in; the other is signed out.
+    const keptSession = await Effect.runPromise(
+      findSessionById(current.id).pipe(Effect.provide(layer)),
+    );
+    const otherSession = await Effect.runPromise(
+      findSessionById(other.id).pipe(Effect.provide(layer)),
+    );
+    expect(keptSession).not.toBeNull();
+    expect(otherSession).toBeNull();
+  });
+
+  it("rejects a wrong current password without changing anything", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const account = await Effect.runPromise(
+      signup("guard@example.com", "password123").pipe(Effect.provide(layer)),
+    );
+    const current = await Effect.runPromise(
+      establishSession(account.id).pipe(Effect.provide(layer)),
+    );
+    const other = await Effect.runPromise(
+      establishSession(account.id).pipe(Effect.provide(layer)),
+    );
+
+    const result = await Effect.runPromise(
+      changePassword(
+        account.id,
+        "wrong-password",
+        "newpassword456",
+        current.id,
+      ).pipe(Effect.provide(layer), Effect.either),
+    );
+    expect(Either.isLeft(result)).toBe(true);
+    if (Either.isLeft(result)) {
+      expect(result.left).toBeInstanceOf(InvalidCredentials);
+    }
+
+    // Original password still valid and no session was touched.
+    await Effect.runPromise(
+      verifyCredentials("guard@example.com", "password123").pipe(
+        Effect.provide(layer),
+      ),
+    );
+    const otherSession = await Effect.runPromise(
+      findSessionById(other.id).pipe(Effect.provide(layer)),
+    );
+    expect(otherSession).not.toBeNull();
   });
 });

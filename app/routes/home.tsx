@@ -28,6 +28,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           <p>
             Signed in as {account.email} ({account.role})
           </p>
+          <p>
+            <Link to="/account/password">Change password</Link>
+          </p>
           <Form method="post" action="/logout">
             <button type="submit">Log out</button>
           </Form>
