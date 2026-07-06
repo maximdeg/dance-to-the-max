@@ -3,9 +3,9 @@ import { redirect } from "react-router";
 import { runtime } from "~/runtime.server";
 import { findAccountById, type Account } from "~/services/Accounts";
 import {
-  createSession,
   destroySession,
-  findSessionById,
+  establishSession,
+  resolveSession,
 } from "~/services/Sessions";
 import {
   readSessionIdCookie,
@@ -25,7 +25,7 @@ export async function getAuthenticatedAccount(
 
   return runtime.runPromise(
     Effect.gen(function* () {
-      const session = yield* findSessionById(sessionId);
+      const session = yield* resolveSession(sessionId);
       if (!session) return null;
       return yield* findAccountById(session.accountId);
     }),
@@ -39,9 +39,12 @@ export async function requireAccount(request: Request): Promise<Account> {
   return account;
 }
 
-/** Create a Session for the account and return the `Set-Cookie` header value. */
+/**
+ * Create a login Session (enforcing the 3-concurrent-Session cap) and return
+ * the `Set-Cookie` header value.
+ */
 export async function startSession(accountId: string): Promise<string> {
-  const session = await runtime.runPromise(createSession(accountId));
+  const session = await runtime.runPromise(establishSession(accountId));
   return serializeSessionIdCookie(session.id);
 }
 
