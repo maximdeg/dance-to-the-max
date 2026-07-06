@@ -28,6 +28,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           <p>
             Signed in as {account.email} ({account.role})
           </p>
+          {account.role === "super_admin" ? (
+            <p>
+              <Link to="/admin/dances">Manage content</Link>
+            </p>
+          ) : null}
           <p>
             <Link to="/account/password">Change password</Link>
           </p>

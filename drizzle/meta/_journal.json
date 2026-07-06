@@ -29,6 +29,13 @@
       "when": 1783338473966,
       "tag": "0003_heavy_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783339568956,
+      "tag": "0004_sticky_speed_demon",
+      "breakpoints": true
     }
   ]
 }
