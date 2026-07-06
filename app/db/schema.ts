@@ -1,7 +1,10 @@
 import {
+  boolean,
   index,
+  integer,
   pgEnum,
   pgTable,
+  primaryKey,
   serial,
   text,
   timestamp,
@@ -95,4 +98,93 @@ export const passwordResetTokens = pgTable(
   (table) => [
     uniqueIndex("password_reset_tokens_hash_unique").on(table.tokenHash),
   ],
+);
+
+/**
+ * A Video's difficulty within a Dance. The declaration order is the display and
+ * sort order (Primeras veces → Max), which Postgres preserves for `ORDER BY`.
+ */
+export const level = pgEnum("level", [
+  "primeras_veces",
+  "principiante",
+  "intermedio",
+  "avanzado",
+  "max",
+]);
+
+/**
+ * A Dance style — the unit the paywall gates on. Bilingual name (es/en columns,
+ * since Locales are fixed at es/en). `minTierRank` is the lowest Tier rank that
+ * unlocks it; the Tier rows themselves are seeded later (#8). `published` is one
+ * half of the two-level Catalog publish rule (the Video is the other).
+ */
+export const dances = pgTable("dances", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nameEs: text("name_es").notNull(),
+  nameEn: text("name_en").notNull(),
+  minTierRank: integer("min_tier_rank").notNull().default(1),
+  published: boolean("published").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * An instructional Video. Belongs to exactly one Dance and carries exactly one
+ * Level; Tags are attached many-to-many via `videoTags`. `providerAssetId` is a
+ * manual reference to the hosted video for now (real upload comes later).
+ */
+export const videos = pgTable(
+  "videos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    danceId: uuid("dance_id")
+      .notNull()
+      .references(() => dances.id, { onDelete: "cascade" }),
+    level: level("level").notNull(),
+    titleEs: text("title_es").notNull(),
+    titleEn: text("title_en").notNull(),
+    descriptionEs: text("description_es").notNull().default(""),
+    descriptionEn: text("description_en").notNull().default(""),
+    providerAssetId: text("provider_asset_id").notNull().default(""),
+    published: boolean("published").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("videos_dance_id_idx").on(table.danceId)],
+);
+
+/** A free-form, bilingual label used to filter and search Videos. */
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    labelEs: text("label_es").notNull(),
+    labelEn: text("label_en").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("tags_label_es_unique").on(table.labelEs)],
+);
+
+/** Join table for the Video ↔ Tag many-to-many relationship. */
+export const videoTags = pgTable(
+  "video_tags",
+  {
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.videoId, table.tagId] })],
 );

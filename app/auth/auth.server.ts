@@ -12,6 +12,7 @@ import {
   serializeClearedSessionCookie,
   serializeSessionIdCookie,
 } from "./cookie.server";
+import { isSuperAdmin } from "./roles";
 
 /**
  * Resolve the logged-in Account for a request, or `null`. Reads the session id
@@ -44,6 +45,19 @@ export async function getCurrentSessionId(
   request: Request,
 ): Promise<string | undefined> {
   return readSessionIdCookie(request);
+}
+
+/**
+ * Require the request come from a signed-in Super Admin. Redirects a Visitor to
+ * `/login`; a signed-in non-Super-Admin gets a 403 (they're authenticated but
+ * not authorized for the admin surfaces).
+ */
+export async function requireSuperAdmin(request: Request): Promise<Account> {
+  const account = await requireAccount(request);
+  if (!isSuperAdmin(account.role)) {
+    throw new Response("Forbidden", { status: 403 });
+  }
+  return account;
 }
 
 /**
