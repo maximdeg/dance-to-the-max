@@ -30,6 +30,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           </p>
           <p>
             <Link to="/catalog">Browse the catalog</Link>
+            {" · "}
+            <Link to="/pricing">Plans</Link>
           </p>
           {account.role === "super_admin" ? (
             <p>

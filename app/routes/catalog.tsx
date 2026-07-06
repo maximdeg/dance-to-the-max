@@ -7,6 +7,8 @@ import {
   searchPublishedVideos,
 } from "~/services/Catalog";
 import { LEVELS, type Level } from "~/services/Content";
+import { isEntitledTo } from "~/services/Entitlement";
+import { getEntitlement } from "~/services/Subscriptions";
 import type { Route } from "./+types/catalog";
 
 const LEVEL_LABELS: Record<Level, string> = {
@@ -25,19 +27,30 @@ export function meta() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireAccount(request);
+  const account = await requireAccount(request);
   const url = new URL(request.url);
   const level = asLevel(url.searchParams.get("level"));
   const tagId = url.searchParams.get("tag") || undefined;
   const filtering = Boolean(level || tagId);
 
-  const [dances, tags, results] = await Promise.all([
+  const [published, tags, results, entitlement] = await Promise.all([
     runtime.runPromise(listPublishedDances()),
     runtime.runPromise(listCatalogTags()),
     filtering
       ? runtime.runPromise(searchPublishedVideos({ level, tagId }))
       : Promise.resolve(null),
+    runtime.runPromise(getEntitlement(account.id)),
   ]);
+
+  // Mark each Dance locked when the Subscriber's Tier doesn't reach it. The
+  // publish rule already decided visibility; entitlement decides watchability.
+  const dances = published.map((dance) => ({
+    id: dance.id,
+    nameEs: dance.nameEs,
+    nameEn: dance.nameEn,
+    minTierRank: dance.minTierRank,
+    locked: !isEntitledTo(entitlement, dance),
+  }));
 
   // `levels` is passed through the loader (rather than importing the Drizzle-
   // derived LEVELS into the component) so the schema/ORM stays out of the
@@ -116,6 +129,12 @@ export default function Catalog({ loaderData }: Route.ComponentProps) {
                   <Link to={`/catalog/${dance.id}`}>
                     {dance.nameEs} / {dance.nameEn}
                   </Link>
+                  {dance.locked ? (
+                    <>
+                      {" "}
+                      🔒 <Link to="/pricing">Upgrade to unlock</Link>
+                    </>
+                  ) : null}
                 </li>
               ))}
             </ul>
