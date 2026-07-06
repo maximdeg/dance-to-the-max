@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-This is a **pre-implementation** project: the product has been refined and documented, but no application code exists yet. The stack is decided (ADR-0006): **TypeScript + React Router v7 + Effect + Postgres/Drizzle + Vitest**, with **Stripe** for billing and a **hosted video provider** for streaming.
+The application skeleton has landed (issue #2): the stack from ADR-0006 is scaffolded — **TypeScript + React Router v7 (framework mode) + Effect + Postgres/Drizzle + Vitest** — with **Stripe** for billing and a **hosted video provider** for streaming still to come. Deployment targets **Vercel** (via the `@vercel/react-router` preset). Feature slices (#3+) build on this skeleton.
 
-- **Build/lint/test commands** don't exist until the app is scaffolded. Per the conventions the engineering skills assume, expect `npm run typecheck` and `npm test` once the scaffold lands — update this section with the real commands then.
+- **Commands** (see `README.md` for details):
+  - `npm run dev` — run the app locally (Vite dev server)
+  - `npm run typecheck` — `react-router typegen` + `tsc --noEmit`
+  - `npm test` — Vitest (runs against in-memory PGLite; no DB needed)
+  - `npm run db:generate` — generate a Drizzle migration from `app/db/schema.ts`
+  - `npm run db:migrate` — apply checked-in migrations to `DATABASE_URL`
+  - `npm run build` / `npm start` — production build / serve
+- **Architecture conventions established by the scaffold:** Effect services live in `app/services/` behind `Context.Tag`s (e.g. `Database`); loaders/actions run Effects through the runtime in `app/runtime.server.ts`; the Drizzle schema is `app/db/schema.ts`; UI copy is externalized through the i18n catalog in `app/i18n/`.
 - **Read these in order; later docs refine earlier ones:**
   1. `PRD.md` — the v1 product requirements (problem, solution, 34 user stories, implementation & testing decisions, scope).
   2. `CONTEXT.md` — canonical domain glossary (use these exact terms; e.g. **Tier** = subscription, **Level** = difficulty — never mix them).

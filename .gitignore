@@ -1,1 +1,21 @@
 .claude
+
+# Dependencies
+node_modules
+
+# Build output
+build
+.react-router
+.vercel
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
