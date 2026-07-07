@@ -9,7 +9,10 @@ import {
   deleteComment,
   listThread,
   postComment,
+  removeComment,
   replyToComment,
+  reportComment,
+  setCommentHidden,
 } from "~/services/Comments";
 import { getPlayback } from "~/services/Playback";
 import type { Route } from "./+types/catalog.$danceId.$videoId";
@@ -43,10 +46,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         authorId: comment.authorId,
         body: comment.body,
         createdAt: comment.createdAt.toISOString(),
+        hidden: comment.hidden,
+        reportCount: comment.reportCount,
         replies: comment.replies.map((reply) => ({
           id: reply.id,
           body: reply.body,
           createdAt: reply.createdAt.toISOString(),
+          hidden: reply.hidden,
+          reportCount: reply.reportCount,
         })),
       }))
     : null;
@@ -107,11 +114,84 @@ export async function action({ request, params }: Route.ActionArgs) {
     return { error: Either.isLeft(result) };
   }
 
+  if (intent === "hide" || intent === "unhide") {
+    const commentId = String(form.get("commentId") ?? "");
+    const result = await runtime.runPromise(
+      setCommentHidden(account.id, commentId, intent === "hide").pipe(
+        Effect.either,
+      ),
+    );
+    return { error: Either.isLeft(result) };
+  }
+
+  if (intent === "remove") {
+    const commentId = String(form.get("commentId") ?? "");
+    const result = await runtime.runPromise(
+      removeComment(account.id, commentId).pipe(Effect.either),
+    );
+    return { error: Either.isLeft(result) };
+  }
+
+  if (intent === "report") {
+    const commentId = String(form.get("commentId") ?? "");
+    const result = await runtime.runPromise(
+      reportComment(account.id, commentId).pipe(Effect.either),
+    );
+    return { error: Either.isLeft(result) };
+  }
+
   return { error: true as const };
 }
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleString();
+}
+
+/** Staff-only moderation controls for a Comment or reply. */
+function StaffModeration({
+  id,
+  hidden,
+  reportCount,
+}: {
+  id: string;
+  hidden: boolean;
+  reportCount: number;
+}) {
+  const t = useTranslate();
+  return (
+    <p>
+      {hidden ? <em>{t("comments.hidden")} </em> : null}
+      {reportCount > 0 ? (
+        <span>
+          ⚑ {reportCount} {t("comments.reported")}{" "}
+        </span>
+      ) : null}
+      <Form method="post" style={{ display: "inline" }}>
+        <input type="hidden" name="intent" value={hidden ? "unhide" : "hide"} />
+        <input type="hidden" name="commentId" value={id} />
+        <button type="submit">
+          {hidden ? t("comments.unhide") : t("comments.hide")}
+        </button>
+      </Form>{" "}
+      <Form method="post" style={{ display: "inline" }}>
+        <input type="hidden" name="intent" value="remove" />
+        <input type="hidden" name="commentId" value={id} />
+        <button type="submit">{t("comments.remove")}</button>
+      </Form>
+    </p>
+  );
+}
+
+/** Subscriber "report" control for someone else's Comment. */
+function ReportButton({ id }: { id: string }) {
+  const t = useTranslate();
+  return (
+    <Form method="post" style={{ display: "inline" }}>
+      <input type="hidden" name="intent" value="report" />
+      <input type="hidden" name="commentId" value={id} />
+      <button type="submit">{t("comments.report")}</button>
+    </Form>
+  );
 }
 
 export default function WatchVideo({
@@ -185,55 +265,81 @@ export default function WatchVideo({
             <p>{t("comments.empty")}</p>
           ) : (
             <ul>
-              {thread.map((comment) => (
-                <li key={comment.id}>
-                  <p>
-                    <strong>
-                      {comment.authorId === currentAccountId
-                        ? t("comments.you")
-                        : t("comments.someone")}
-                    </strong>{" "}
-                    <small>{formatTime(comment.createdAt)}</small>
-                  </p>
-                  <p>{comment.body}</p>
-                  {comment.authorId === currentAccountId ? (
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="delete" />
-                      <input type="hidden" name="commentId" value={comment.id} />
-                      <button type="submit">{t("comments.delete")}</button>
-                    </Form>
-                  ) : null}
-
-                  {comment.replies.length > 0 ? (
-                    <ul>
-                      {comment.replies.map((reply) => (
-                        <li key={reply.id}>
-                          <p>
-                            <strong>🎓 {t("comments.studio")}</strong>{" "}
-                            <small>{formatTime(reply.createdAt)}</small>
-                          </p>
-                          <p>{reply.body}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-
-                  {viewerIsStaff ? (
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="reply" />
-                      <input type="hidden" name="commentId" value={comment.id} />
-                      <label>
-                        <textarea
-                          name="body"
-                          required
-                          placeholder={t("comments.replyPlaceholder")}
+              {thread.map((comment) => {
+                const own = comment.authorId === currentAccountId;
+                return (
+                  <li key={comment.id}>
+                    <p>
+                      <strong>
+                        {own ? t("comments.you") : t("comments.someone")}
+                      </strong>{" "}
+                      <small>{formatTime(comment.createdAt)}</small>
+                    </p>
+                    <p>{comment.body}</p>
+                    {own ? (
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="delete" />
+                        <input
+                          type="hidden"
+                          name="commentId"
+                          value={comment.id}
                         />
-                      </label>
-                      <button type="submit">{t("comments.reply")}</button>
-                    </Form>
-                  ) : null}
-                </li>
-              ))}
+                        <button type="submit">{t("comments.delete")}</button>
+                      </Form>
+                    ) : null}
+                    {!viewerIsStaff && !own ? (
+                      <ReportButton id={comment.id} />
+                    ) : null}
+                    {viewerIsStaff ? (
+                      <StaffModeration
+                        id={comment.id}
+                        hidden={comment.hidden}
+                        reportCount={comment.reportCount}
+                      />
+                    ) : null}
+
+                    {comment.replies.length > 0 ? (
+                      <ul>
+                        {comment.replies.map((reply) => (
+                          <li key={reply.id}>
+                            <p>
+                              <strong>🎓 {t("comments.studio")}</strong>{" "}
+                              <small>{formatTime(reply.createdAt)}</small>
+                            </p>
+                            <p>{reply.body}</p>
+                            {viewerIsStaff ? (
+                              <StaffModeration
+                                id={reply.id}
+                                hidden={reply.hidden}
+                                reportCount={reply.reportCount}
+                              />
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+
+                    {viewerIsStaff ? (
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="reply" />
+                        <input
+                          type="hidden"
+                          name="commentId"
+                          value={comment.id}
+                        />
+                        <label>
+                          <textarea
+                            name="body"
+                            required
+                            placeholder={t("comments.replyPlaceholder")}
+                          />
+                        </label>
+                        <button type="submit">{t("comments.reply")}</button>
+                      </Form>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

@@ -10,7 +10,10 @@ import {
   deleteComment,
   listThread,
   postComment,
+  removeComment,
   replyToComment,
+  reportComment,
+  setCommentHidden,
 } from "./Comments";
 import { createDance, createVideo } from "./Content";
 import { Database } from "./Database";
@@ -244,5 +247,166 @@ describe("deleteComment authorization", () => {
       run(layer, listThread(subscriber.id, video.id)),
     );
     expect(thread).toHaveLength(1);
+  });
+});
+
+describe("moderation", () => {
+  /** Sign up a second entitled Subscriber (Tier 1, active). */
+  const entitledSubscriber = async (layer: TestLayer, email: string) => {
+    const tiers = await Effect.runPromise(run(layer, listTiers()));
+    const account = await Effect.runPromise(
+      run(layer, signup(email, "password123")),
+    );
+    await Effect.runPromise(
+      run(
+        layer,
+        createSubscription({
+          accountId: account.id,
+          tierId: tiers.find((t) => t.rank === 1)!.id,
+          status: "active",
+          billingPeriod: "monthly",
+        }),
+      ),
+    );
+    return account;
+  };
+
+  it("hides a Comment from Subscribers while staff still see it flagged", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber, admin } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "spam")),
+    );
+
+    await Effect.runPromise(
+      run(layer, setCommentHidden(admin.id, comment.id, true)),
+    );
+
+    // Gone for the Subscriber, still visible (flagged) for staff.
+    expect(
+      await Effect.runPromise(run(layer, listThread(subscriber.id, video.id))),
+    ).toHaveLength(0);
+    const staffThread = await Effect.runPromise(
+      run(layer, listThread(admin.id, video.id)),
+    );
+    expect(staffThread).toHaveLength(1);
+    expect(staffThread[0]?.hidden).toBe(true);
+
+    // Unhide restores it for Subscribers.
+    await Effect.runPromise(
+      run(layer, setCommentHidden(admin.id, comment.id, false)),
+    );
+    expect(
+      await Effect.runPromise(run(layer, listThread(subscriber.id, video.id))),
+    ).toHaveLength(1);
+  });
+
+  it("hides a Comment's replies along with it for Subscribers", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber, admin } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "q")),
+    );
+    await Effect.runPromise(
+      run(layer, replyToComment(admin.id, comment.id, "a")),
+    );
+
+    await Effect.runPromise(
+      run(layer, setCommentHidden(admin.id, comment.id, true)),
+    );
+
+    expect(
+      await Effect.runPromise(run(layer, listThread(subscriber.id, video.id))),
+    ).toHaveLength(0);
+    // Staff still see the Comment and its reply.
+    const staffThread = await Effect.runPromise(
+      run(layer, listThread(admin.id, video.id)),
+    );
+    expect(staffThread[0]?.replies).toHaveLength(1);
+  });
+
+  it("removes any Comment regardless of author, cascading replies", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber, admin } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "bye")),
+    );
+    await Effect.runPromise(
+      run(layer, replyToComment(admin.id, comment.id, "a")),
+    );
+
+    await Effect.runPromise(run(layer, removeComment(admin.id, comment.id)));
+
+    // Gone for everyone, including staff.
+    expect(
+      await Effect.runPromise(run(layer, listThread(admin.id, video.id))),
+    ).toHaveLength(0);
+  });
+
+  it("refuses moderation from a non-staff Subscriber", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "mine")),
+    );
+
+    const hide = await Effect.runPromise(
+      run(layer, setCommentHidden(subscriber.id, comment.id, true).pipe(Effect.either)),
+    );
+    expect(Either.isLeft(hide)).toBe(true);
+    if (Either.isLeft(hide)) expect(hide.left._tag).toBe("NotAuthorized");
+
+    const remove = await Effect.runPromise(
+      run(layer, removeComment(subscriber.id, comment.id).pipe(Effect.either)),
+    );
+    expect(Either.isLeft(remove)).toBe(true);
+    if (Either.isLeft(remove)) expect(remove.left._tag).toBe("NotAuthorized");
+
+    // The Comment is untouched.
+    expect(
+      await Effect.runPromise(run(layer, listThread(subscriber.id, video.id))),
+    ).toHaveLength(1);
+  });
+
+  it("lets a Subscriber report a Comment; duplicate reports don't double-count", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber, admin } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "iffy")),
+    );
+    const reporter = await entitledSubscriber(layer, "reporter@example.com");
+
+    await Effect.runPromise(run(layer, reportComment(reporter.id, comment.id)));
+    await Effect.runPromise(run(layer, reportComment(reporter.id, comment.id)));
+
+    // Surfaced to staff as a report count; Subscribers never see it.
+    const staffThread = await Effect.runPromise(
+      run(layer, listThread(admin.id, video.id)),
+    );
+    expect(staffThread[0]?.reportCount).toBe(1);
+    const subThread = await Effect.runPromise(
+      run(layer, listThread(subscriber.id, video.id)),
+    );
+    expect(subThread[0]?.reportCount).toBe(0);
+  });
+
+  it("refuses a report from an account without access, or of a missing Comment", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { video, subscriber, outsider } = await setup(layer);
+    const comment = await Effect.runPromise(
+      run(layer, postComment(subscriber.id, video.id, "x")),
+    );
+
+    const denied = await Effect.runPromise(
+      run(layer, reportComment(outsider.id, comment.id).pipe(Effect.either)),
+    );
+    expect(Either.isLeft(denied)).toBe(true);
+    if (Either.isLeft(denied)) expect(denied.left._tag).toBe("CommentNotAllowed");
+
+    const missing = await Effect.runPromise(
+      run(layer, reportComment(subscriber.id, randomUUID()).pipe(Effect.either)),
+    );
+    expect(Either.isLeft(missing)).toBe(true);
+    if (Either.isLeft(missing)) expect(missing.left._tag).toBe("CommentNotFound");
   });
 });
