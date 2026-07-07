@@ -90,3 +90,9 @@ _Avoid_: view, streaming
 **Signed URL**:
 A time-limited URL from the video provider authorizing playback of one Video.
 _Avoid_: token link
+
+### Public site
+
+**Testimonial**:
+A curated, Visitor-facing quote of praise shown on the public site (the Home funnel strip and the Comentarios page) as social proof. Marketing content authored by staff and stored in the i18n string catalog — not a Subscriber-posted Comment.
+_Avoid_: Comment, review, feedback

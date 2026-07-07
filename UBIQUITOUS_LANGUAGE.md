@@ -40,6 +40,12 @@ Glossary for v1 (lean validation MVP). The terse canonical version for tooling l
 | **Playback**   | Streaming a Video to an entitled Subscriber via a Signed URL.                        | streaming, view  |
 | **Signed URL** | A time-limited URL from the video provider authorizing playback of one Video.        | token link       |
 
+## Public site
+
+| Term            | Definition                                                                                                             | Aliases to avoid            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Testimonial** | A curated, Visitor-facing quote of praise on the public site (Home strip, Comentarios page); staff-authored marketing. | Comment, review, feedback   |
+
 ## Relationships
 
 - An **Account** has exactly one **Role**.
