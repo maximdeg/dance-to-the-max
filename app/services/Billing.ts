@@ -31,6 +31,9 @@ export interface CheckoutResult {
   readonly tierId: string;
   readonly billingPeriod: BillingInterval;
   readonly trial: boolean;
+  /** The provider's id for the created subscription — the key later webhook
+   * events correlate against (see #11). */
+  readonly providerSubscriptionId: string;
 }
 
 /**
@@ -113,6 +116,13 @@ export const BillingLive = Layer.succeed(Billing, {
   retrieveCheckoutSession: (sessionId) =>
     Effect.sync(() => {
       const payload = decodeSession(sessionId);
-      return payload ? { status: "complete" as const, ...payload } : null;
+      if (!payload) return null;
+      // One subscription per Account, so a deterministic per-account id is a
+      // stable correlation key that survives re-fulfilling the same session.
+      return {
+        status: "complete" as const,
+        ...payload,
+        providerSubscriptionId: `sub_stub_${payload.accountId}`,
+      };
     }),
 });

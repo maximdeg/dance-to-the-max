@@ -43,6 +43,13 @@
       "when": 1783348873435,
       "tag": "0005_aspiring_justin_hammer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783425042609,
+      "tag": "0006_huge_siren",
+      "breakpoints": true
     }
   ]
 }

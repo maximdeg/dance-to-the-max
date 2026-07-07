@@ -13,6 +13,7 @@ export default [
   route("catalog/:danceId/:videoId", "routes/catalog.$danceId.$videoId.tsx"),
   route("pricing", "routes/pricing.tsx"),
   route("checkout/success", "routes/checkout.success.tsx"),
+  route("webhooks/stripe", "routes/webhooks.stripe.ts"),
   route("admin/dances", "routes/admin.dances.tsx"),
   route("admin/dances/:danceId", "routes/admin.dances.$danceId.tsx"),
   route("admin/videos/:videoId", "routes/admin.videos.$videoId.tsx"),

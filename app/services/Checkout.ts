@@ -88,5 +88,18 @@ export const fulfillCheckout = (
       tierId: session.tierId,
       status: session.trial ? "trialing" : "active",
       billingPeriod: session.billingPeriod,
+      providerSubscriptionId: session.providerSubscriptionId,
+      // An initial period end; webhook events (#11) advance it thereafter.
+      currentPeriodEnd: periodEndFrom(session.trial, session.billingPeriod),
     });
   });
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TRIAL_DAYS = 7;
+
+/** The first period's end: a fixed trial window, else one billing period out. */
+const periodEndFrom = (trial: boolean, billingPeriod: BillingInterval): Date => {
+  if (trial) return new Date(Date.now() + TRIAL_DAYS * DAY_MS);
+  const days = billingPeriod === "annual" ? 365 : 30;
+  return new Date(Date.now() + days * DAY_MS);
+};

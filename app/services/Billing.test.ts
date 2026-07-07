@@ -48,6 +48,7 @@ describe("BillingLive", () => {
       tierId: "tier-2",
       billingPeriod: "annual",
       trial: true,
+      providerSubscriptionId: "sub_stub_acc-1",
     });
   });
 
