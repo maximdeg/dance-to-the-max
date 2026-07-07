@@ -12,7 +12,7 @@ import {
   serializeClearedSessionCookie,
   serializeSessionIdCookie,
 } from "./cookie.server";
-import { isSuperAdmin } from "./roles";
+import { isStaff, isSuperAdmin } from "./roles";
 
 /**
  * Resolve the logged-in Account for a request, or `null`. Reads the session id
@@ -55,6 +55,19 @@ export async function getCurrentSessionId(
 export async function requireSuperAdmin(request: Request): Promise<Account> {
   const account = await requireAccount(request);
   if (!isSuperAdmin(account.role)) {
+    throw new Response("Forbidden", { status: 403 });
+  }
+  return account;
+}
+
+/**
+ * Require the request come from signed-in staff (Admin or Super Admin) — the
+ * gate for the support console. A Visitor is redirected to `/login`; a
+ * Subscriber gets a 403.
+ */
+export async function requireStaff(request: Request): Promise<Account> {
+  const account = await requireAccount(request);
+  if (!isStaff(account.role)) {
     throw new Response("Forbidden", { status: 403 });
   }
   return account;

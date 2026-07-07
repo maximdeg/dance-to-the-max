@@ -15,6 +15,7 @@ export default [
   route("pricing", "routes/pricing.tsx"),
   route("checkout/success", "routes/checkout.success.tsx"),
   route("webhooks/stripe", "routes/webhooks.stripe.ts"),
+  route("admin/accounts", "routes/admin.accounts.tsx"),
   route("admin/dances", "routes/admin.dances.tsx"),
   route("admin/dances/:danceId", "routes/admin.dances.$danceId.tsx"),
   route("admin/videos/:videoId", "routes/admin.videos.$videoId.tsx"),

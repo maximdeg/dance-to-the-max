@@ -2,12 +2,14 @@ import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import { makeTestDatabaseLayer } from "../../test/db";
 import {
+  AccountBlocked,
   changePassword,
   EmailAlreadyInUse,
   InvalidCredentials,
   signup,
   verifyCredentials,
 } from "./Accounts";
+import { setAccountBlocked } from "./AdminConsole";
 import { establishSession, findSessionById } from "./Sessions";
 
 describe("signup", () => {
@@ -85,6 +87,49 @@ describe("verifyCredentials", () => {
       ),
     );
     expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("blocks a blocked Account from logging in, even with the right password", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const account = await Effect.runPromise(
+      signup("blocked@example.com", "password123").pipe(Effect.provide(layer)),
+    );
+    await Effect.runPromise(
+      setAccountBlocked(account.id, true).pipe(Effect.provide(layer)),
+    );
+
+    const result = await Effect.runPromise(
+      verifyCredentials("blocked@example.com", "password123").pipe(
+        Effect.provide(layer),
+        Effect.either,
+      ),
+    );
+    expect(Either.isLeft(result)).toBe(true);
+    if (Either.isLeft(result)) {
+      expect(result.left).toBeInstanceOf(AccountBlocked);
+    }
+  });
+
+  it("doesn't reveal blocked status to a wrong password", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const account = await Effect.runPromise(
+      signup("blocked2@example.com", "password123").pipe(Effect.provide(layer)),
+    );
+    await Effect.runPromise(
+      setAccountBlocked(account.id, true).pipe(Effect.provide(layer)),
+    );
+
+    const result = await Effect.runPromise(
+      verifyCredentials("blocked2@example.com", "wrong").pipe(
+        Effect.provide(layer),
+        Effect.either,
+      ),
+    );
+    // Wrong password → generic InvalidCredentials, not AccountBlocked.
+    expect(Either.isLeft(result)).toBe(true);
+    if (Either.isLeft(result)) {
+      expect(result.left).toBeInstanceOf(InvalidCredentials);
+    }
   });
 });
 
