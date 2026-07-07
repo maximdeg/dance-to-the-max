@@ -26,28 +26,29 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       {account ? (
         <>
           <p>
-            Signed in as {account.email} ({account.role})
+            {t("home.signedInAs")} {account.email} ({account.role})
           </p>
           <p>
-            <Link to="/catalog">Browse the catalog</Link>
+            <Link to="/catalog">{t("home.browseCatalog")}</Link>
             {" · "}
-            <Link to="/pricing">Plans</Link>
+            <Link to="/pricing">{t("nav.plans")}</Link>
           </p>
           {account.role === "super_admin" ? (
             <p>
-              <Link to="/admin/dances">Manage content</Link>
+              <Link to="/admin/dances">{t("nav.manageContent")}</Link>
             </p>
           ) : null}
           <p>
-            <Link to="/account/password">Change password</Link>
+            <Link to="/account/password">{t("nav.changePassword")}</Link>
           </p>
           <Form method="post" action="/logout">
-            <button type="submit">Log out</button>
+            <button type="submit">{t("nav.logout")}</button>
           </Form>
         </>
       ) : (
         <p>
-          <Link to="/login">Log in</Link> or <Link to="/signup">sign up</Link>
+          <Link to="/login">{t("nav.login")}</Link> ·{" "}
+          <Link to="/signup">{t("nav.signup")}</Link>
         </p>
       )}
     </main>

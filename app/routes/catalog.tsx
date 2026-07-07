@@ -1,5 +1,7 @@
 import { Form, Link } from "react-router";
 import { requireAccount } from "~/auth/auth.server";
+import { pick, levelLabel } from "~/i18n/content";
+import { useLocale, useTranslate } from "~/i18n/context";
 import { runtime } from "~/runtime.server";
 import {
   listCatalogTags,
@@ -10,14 +12,6 @@ import { LEVELS, type Level } from "~/services/Content";
 import { isEntitledTo } from "~/services/Entitlement";
 import { getEntitlement } from "~/services/Subscriptions";
 import type { Route } from "./+types/catalog";
-
-const LEVEL_LABELS: Record<Level, string> = {
-  primeras_veces: "Primeras veces",
-  principiante: "Principiante",
-  intermedio: "Intermedio",
-  avanzado: "Avanzado",
-  max: "Max",
-};
 
 const asLevel = (value: string | null): Level | undefined =>
   LEVELS.includes(value as Level) ? (value as Level) : undefined;
@@ -67,51 +61,56 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Catalog({ loaderData }: Route.ComponentProps) {
   const { dances, tags, results, level, tagId, levels } = loaderData;
+  const t = useTranslate();
+  const locale = useLocale();
 
   return (
     <main>
-      <h1>Catalog</h1>
+      <h1>{t("catalog.title")}</h1>
 
       <Form method="get">
         <label>
-          Level
+          {t("catalog.level")}
           <select name="level" defaultValue={level}>
-            <option value="">All levels</option>
+            <option value="">{t("catalog.allLevels")}</option>
             {levels.map((lvl) => (
               <option key={lvl} value={lvl}>
-                {LEVEL_LABELS[lvl]}
+                {levelLabel(locale, lvl)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Tag
+          {t("catalog.tag")}
           <select name="tag" defaultValue={tagId}>
-            <option value="">All tags</option>
+            <option value="">{t("catalog.allTags")}</option>
             {tags.map((tag) => (
               <option key={tag.id} value={tag.id}>
-                {tag.labelEs} / {tag.labelEn}
+                {pick(locale, tag.labelEs, tag.labelEn)}
               </option>
             ))}
           </select>
         </label>
-        <button type="submit">Filter</button>
-        {results !== null ? <Link to="/catalog">Clear</Link> : null}
+        <button type="submit">{t("catalog.filter")}</button>
+        {results !== null ? (
+          <Link to="/catalog">{t("catalog.clear")}</Link>
+        ) : null}
       </Form>
 
       {results !== null ? (
         <section>
-          <h2>Results</h2>
+          <h2>{t("catalog.results")}</h2>
           {results.length === 0 ? (
-            <p>No videos match those filters.</p>
+            <p>{t("catalog.noResults")}</p>
           ) : (
             <ul>
               {results.map((video) => (
                 <li key={video.id}>
                   <Link to={`/catalog/${video.danceId}`}>
-                    {video.titleEs} / {video.titleEn}
+                    {pick(locale, video.titleEs, video.titleEn)}
                   </Link>{" "}
-                  — {video.danceNameEs} · {LEVEL_LABELS[video.level]}
+                  — {pick(locale, video.danceNameEs, video.danceNameEn)} ·{" "}
+                  {levelLabel(locale, video.level)}
                 </li>
               ))}
             </ul>
@@ -119,20 +118,20 @@ export default function Catalog({ loaderData }: Route.ComponentProps) {
         </section>
       ) : (
         <section>
-          <h2>Dances</h2>
+          <h2>{t("catalog.dances")}</h2>
           {dances.length === 0 ? (
-            <p>No dances are available yet.</p>
+            <p>{t("catalog.noDances")}</p>
           ) : (
             <ul>
               {dances.map((dance) => (
                 <li key={dance.id}>
                   <Link to={`/catalog/${dance.id}`}>
-                    {dance.nameEs} / {dance.nameEn}
+                    {pick(locale, dance.nameEs, dance.nameEn)}
                   </Link>
                   {dance.locked ? (
                     <>
                       {" "}
-                      🔒 <Link to="/pricing">Upgrade to unlock</Link>
+                      🔒 <Link to="/pricing">{t("catalog.upgrade")}</Link>
                     </>
                   ) : null}
                 </li>

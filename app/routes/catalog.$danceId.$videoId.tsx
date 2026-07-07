@@ -1,6 +1,8 @@
 import { Effect, Either } from "effect";
 import { Link } from "react-router";
 import { requireAccount } from "~/auth/auth.server";
+import { pick } from "~/i18n/content";
+import { useLocale, useTranslate } from "~/i18n/context";
 import { runtime } from "~/runtime.server";
 import { getPlayback } from "~/services/Playback";
 import type { Route } from "./+types/catalog.$danceId.$videoId";
@@ -45,34 +47,46 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export default function WatchVideo({ loaderData }: Route.ComponentProps) {
   const { danceId } = loaderData;
+  const t = useTranslate();
+  const locale = useLocale();
 
   return (
     <main>
       <p>
-        <Link to={`/catalog/${danceId}`}>← Back to dance</Link>
+        <Link to={`/catalog/${danceId}`}>{t("watch.back")}</Link>
       </p>
 
       {loaderData.locked ? (
         <section>
-          <p>🔒 This dance isn't included in your current plan.</p>
+          <p>🔒 {t("dance.locked")}</p>
           <p>
-            <Link to="/pricing">See plans to unlock it</Link>
+            <Link to="/pricing">{t("dance.seePlans")}</Link>
           </p>
         </section>
       ) : (
         <>
           <h1>
-            {loaderData.video.titleEs} / {loaderData.video.titleEn}
+            {pick(locale, loaderData.video.titleEs, loaderData.video.titleEn)}
           </h1>
           <video controls src={loaderData.playback.url}>
-            Your browser doesn't support the video element.
+            {t("watch.unsupported")}
           </video>
-          {loaderData.video.descriptionEs ? (
-            <p>{loaderData.video.descriptionEs}</p>
+          {pick(
+            locale,
+            loaderData.video.descriptionEs,
+            loaderData.video.descriptionEn,
+          ) ? (
+            <p>
+              {pick(
+                locale,
+                loaderData.video.descriptionEs,
+                loaderData.video.descriptionEn,
+              )}
+            </p>
           ) : null}
           <p>
             <small>
-              Playback link expires at{" "}
+              {t("watch.linkExpires")}{" "}
               {new Date(loaderData.playback.expiresAt).toLocaleTimeString()}.
             </small>
           </p>
