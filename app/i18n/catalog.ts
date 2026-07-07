@@ -46,6 +46,18 @@ export type Messages = {
   readonly "watch.back": string;
   readonly "watch.linkExpires": string;
   readonly "watch.unsupported": string;
+  // Comments.
+  readonly "comments.title": string;
+  readonly "comments.placeholder": string;
+  readonly "comments.post": string;
+  readonly "comments.empty": string;
+  readonly "comments.reply": string;
+  readonly "comments.replyPlaceholder": string;
+  readonly "comments.delete": string;
+  readonly "comments.studio": string;
+  readonly "comments.you": string;
+  readonly "comments.someone": string;
+  readonly "comments.error": string;
 };
 
 export type MessageKey = keyof Messages;
@@ -83,6 +95,17 @@ export const catalog: Record<Locale, Messages> = {
     "watch.back": "← Volver a la danza",
     "watch.linkExpires": "El enlace de reproducción vence a las",
     "watch.unsupported": "Tu navegador no admite el elemento de video.",
+    "comments.title": "Comentarios",
+    "comments.placeholder": "Escribí un comentario…",
+    "comments.post": "Comentar",
+    "comments.empty": "Todavía no hay comentarios. ¡Sé el primero!",
+    "comments.reply": "Responder",
+    "comments.replyPlaceholder": "Responder como el estudio…",
+    "comments.delete": "Eliminar",
+    "comments.studio": "Estudio",
+    "comments.you": "Vos",
+    "comments.someone": "Suscriptor",
+    "comments.error": "No se pudo completar la acción.",
   },
   en: {
     "app.name": "Dance To the Max",
@@ -116,6 +139,17 @@ export const catalog: Record<Locale, Messages> = {
     "watch.back": "← Back to dance",
     "watch.linkExpires": "Playback link expires at",
     "watch.unsupported": "Your browser doesn't support the video element.",
+    "comments.title": "Comments",
+    "comments.placeholder": "Write a comment…",
+    "comments.post": "Post comment",
+    "comments.empty": "No comments yet. Be the first!",
+    "comments.reply": "Reply",
+    "comments.replyPlaceholder": "Reply as the studio…",
+    "comments.delete": "Delete",
+    "comments.studio": "Studio",
+    "comments.you": "You",
+    "comments.someone": "Subscriber",
+    "comments.error": "Couldn't complete that action.",
   },
 };
 

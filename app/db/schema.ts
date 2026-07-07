@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -268,5 +269,38 @@ export const subscriptions = pgTable(
     uniqueIndex("subscriptions_provider_sub_unique").on(
       table.providerSubscriptionId,
     ),
+  ],
+);
+
+/**
+ * A public message on a Video. A top-level Comment (parent_comment_id NULL) is
+ * posted by an entitled Subscriber; an Admin reply is a child row pointing at
+ * the Comment it answers — one level only, no deeper threading. Posting and
+ * visibility follow the same Entitlement as Playback (enforced in the service).
+ */
+export const comments = pgTable(
+  "comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    // NULL for a top-level Comment; set for an Admin reply to that Comment.
+    parentCommentId: uuid("parent_comment_id").references(
+      (): AnyPgColumn => comments.id,
+      { onDelete: "cascade" },
+    ),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // Serves thread reads: all Comments for a Video, ordered by time.
+    index("comments_video_created_idx").on(table.videoId, table.createdAt),
+    index("comments_parent_idx").on(table.parentCommentId),
   ],
 );
