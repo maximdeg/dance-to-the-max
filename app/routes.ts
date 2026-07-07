@@ -10,6 +10,7 @@ export default [
   route("account/password", "routes/account.password.tsx"),
   route("catalog", "routes/catalog.tsx"),
   route("catalog/:danceId", "routes/catalog.$danceId.tsx"),
+  route("catalog/:danceId/:videoId", "routes/catalog.$danceId.$videoId.tsx"),
   route("pricing", "routes/pricing.tsx"),
   route("admin/dances", "routes/admin.dances.tsx"),
   route("admin/dances/:danceId", "routes/admin.dances.$danceId.tsx"),

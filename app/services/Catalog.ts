@@ -26,6 +26,11 @@ export type CatalogVideo = Video & {
   readonly danceNameEn: string;
 };
 
+export interface PlayableVideo {
+  readonly video: Video;
+  readonly dance: Dance;
+}
+
 export interface CatalogFilters {
   readonly level?: Level;
   readonly tagId?: string;
@@ -102,6 +107,36 @@ export const getPublishedDanceWithVideos = (
     })).filter((group) => group.videos.length > 0);
 
     return { dance, groups };
+  });
+
+/**
+ * A single published Video with its published parent Dance, honoring the
+ * two-level publish rule (both must be published, else null — a draft Video or
+ * a Video under a draft Dance is not playable). The Dance is returned alongside
+ * so a caller can run the Entitlement check (against `dance.minTierRank`)
+ * without a second query.
+ */
+export const getPlayableVideo = (
+  videoId: string,
+): Effect.Effect<PlayableVideo | null, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const rows = yield* Effect.promise(() =>
+      db
+        .select({ video: videos, dance: dances })
+        .from(videos)
+        .innerJoin(dances, eq(videos.danceId, dances.id))
+        .where(
+          and(
+            eq(videos.id, videoId),
+            eq(videos.published, true),
+            eq(dances.published, true),
+          ),
+        )
+        .limit(1),
+    );
+    const row = rows[0];
+    return row ? { video: row.video, dance: row.dance } : null;
   });
 
 /**

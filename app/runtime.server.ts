@@ -2,13 +2,14 @@ import { Layer, ManagedRuntime } from "effect";
 import { DatabaseLive } from "~/services/DatabaseLive";
 import { checkHealth, type HealthReport } from "~/services/Health";
 import { MailerLive } from "~/services/Mailer";
+import { VideoProviderLive } from "~/services/VideoProvider";
 
 /**
  * The single server-side Effect runtime. It owns long-lived resources (the DB
  * pool) for the life of the server process. Loaders and actions run their
  * Effects through this runtime.
  */
-const AppLayer = Layer.mergeAll(DatabaseLive, MailerLive);
+const AppLayer = Layer.mergeAll(DatabaseLive, MailerLive, VideoProviderLive);
 
 export const runtime = ManagedRuntime.make(AppLayer);
 
