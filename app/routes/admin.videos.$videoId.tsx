@@ -7,9 +7,9 @@ import {
   LEVELS,
   listDances,
   listTags,
-  updateVideo,
   type Level,
 } from "~/services/Content";
+import { updateUploadedVideo } from "~/services/VideoIngest";
 import type { Route } from "./+types/admin.videos.$videoId";
 
 const LEVEL_LABELS: Record<Level, string> = {
@@ -47,22 +47,43 @@ export async function action({ request, params }: Route.ActionArgs) {
   if (!LEVELS.includes(videoLevel)) return { error: "Choose a level." };
   if (!titleEs || !titleEn) return { error: "Both titles are required." };
 
+  // A file only replaces the media when one is chosen; otherwise the existing
+  // asset id is kept, so metadata-only edits don't force a re-upload.
+  const file = form.get("videoFile");
+  const upload =
+    file instanceof File && file.size > 0
+      ? {
+          filename: file.name,
+          contentType: file.type,
+          bytes: new Uint8Array(await file.arrayBuffer()),
+        }
+      : null;
+
   const result = await runtime.runPromise(
-    updateVideo(params.videoId, {
-      danceId,
-      level: videoLevel,
-      titleEs,
-      titleEn,
-      descriptionEs: String(form.get("descriptionEs") ?? ""),
-      descriptionEn: String(form.get("descriptionEn") ?? ""),
-      providerAssetId: String(form.get("providerAssetId") ?? "").trim(),
-      published: form.get("published") === "on",
-      tagIds: form.getAll("tagIds").map(String),
-    }).pipe(Effect.either),
+    updateUploadedVideo(
+      params.videoId,
+      {
+        danceId,
+        level: videoLevel,
+        titleEs,
+        titleEn,
+        descriptionEs: String(form.get("descriptionEs") ?? ""),
+        descriptionEn: String(form.get("descriptionEn") ?? ""),
+        published: form.get("published") === "on",
+        tagIds: form.getAll("tagIds").map(String),
+      },
+      upload,
+    ).pipe(Effect.either),
   );
-  return Either.isLeft(result)
-    ? { error: "Could not update the video." }
-    : { ok: true };
+  if (Either.isLeft(result)) {
+    return {
+      error:
+        result.left._tag === "VideoIngestError"
+          ? `Upload failed: ${result.left.reason}`
+          : "Could not update the video.",
+    };
+  }
+  return { ok: true };
 }
 
 export default function AdminVideoEdit({
@@ -83,7 +104,7 @@ export default function AdminVideoEdit({
       {actionData?.error ? <p role="alert">{actionData.error}</p> : null}
       {actionData?.ok ? <p role="status">Saved.</p> : null}
 
-      <Form method="post">
+      <Form method="post" encType="multipart/form-data">
         <label>
           Dance
           <select name="danceId" defaultValue={video.danceId}>
@@ -121,13 +142,12 @@ export default function AdminVideoEdit({
           <textarea name="descriptionEn" defaultValue={video.descriptionEn} />
         </label>
         <label>
-          Provider asset id
-          <input
-            type="text"
-            name="providerAssetId"
-            defaultValue={video.providerAssetId}
-          />
+          Replace video file (optional)
+          <input type="file" name="videoFile" accept="video/*" />
         </label>
+        <p>
+          <small>Current asset: {video.providerAssetId || "— none yet"}</small>
+        </p>
         <fieldset>
           <legend>Tags</legend>
           {tags.length === 0 ? (

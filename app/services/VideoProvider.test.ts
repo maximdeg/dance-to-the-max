@@ -1,9 +1,10 @@
-import { Effect } from "effect";
+import { Effect, Either } from "effect";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_TTL_SECONDS,
   VideoProvider,
   VideoProviderLive,
+  type IngestRequest,
   type SignPlaybackRequest,
 } from "./VideoProvider";
 
@@ -14,6 +15,45 @@ const sign = (request: SignPlaybackRequest) =>
       return yield* provider.signPlaybackUrl(request);
     }).pipe(Effect.provide(VideoProviderLive)),
   );
+
+const ingest = (request: IngestRequest) =>
+  Effect.runPromise(
+    Effect.gen(function* () {
+      const provider = yield* VideoProvider;
+      return yield* provider.ingest(request);
+    }).pipe(Effect.either, Effect.provide(VideoProviderLive)),
+  );
+
+const videoFile = (overrides: Partial<IngestRequest> = {}): IngestRequest => ({
+  filename: "clip.mp4",
+  contentType: "video/mp4",
+  bytes: new Uint8Array([0, 1, 2, 3]),
+  ...overrides,
+});
+
+describe("VideoProviderLive ingest", () => {
+  it("returns a ready asset id for a valid video file", async () => {
+    const result = await ingest(videoFile());
+    expect(Either.isRight(result)).toBe(true);
+    if (Either.isRight(result)) {
+      expect(result.right.providerAssetId).toMatch(/^asset_/);
+      expect(result.right.status).toBe("ready");
+    }
+  });
+
+  it("rejects an empty file", async () => {
+    const result = await ingest(videoFile({ bytes: new Uint8Array() }));
+    expect(Either.isLeft(result)).toBe(true);
+    if (Either.isLeft(result)) {
+      expect(result.left._tag).toBe("VideoIngestError");
+    }
+  });
+
+  it("rejects a non-video content type", async () => {
+    const result = await ingest(videoFile({ contentType: "image/png" }));
+    expect(Either.isLeft(result)).toBe(true);
+  });
+});
 
 describe("VideoProviderLive", () => {
   it("mints a URL that carries the asset, an expiry, and a token", async () => {

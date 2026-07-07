@@ -22,6 +22,9 @@ type Status = "trialing" | "active" | "past_due" | "canceled";
 const makeSpyProvider = () => {
   const calls: SignPlaybackRequest[] = [];
   const layer = Layer.succeed(VideoProvider, {
+    // Playback never ingests; the stub only needs to record sign calls.
+    ingest: () =>
+      Effect.succeed({ providerAssetId: "unused", status: "ready" as const }),
     signPlaybackUrl: (request) =>
       Effect.sync(() => {
         calls.push(request);
