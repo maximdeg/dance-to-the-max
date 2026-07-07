@@ -35,6 +35,38 @@ export const createSubscription = (
     return subscription;
   });
 
+/**
+ * Create the Account's Subscription, or update it in place if one already
+ * exists (one per Account — the unique index). This is how a completed checkout
+ * takes effect and how a plan switch is applied, without a duplicate row.
+ */
+export const activateSubscription = (
+  input: SubscriptionInput,
+): Effect.Effect<Subscription, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const upserted = yield* Effect.promise(() =>
+      db
+        .insert(subscriptions)
+        .values(input)
+        .onConflictDoUpdate({
+          target: subscriptions.accountId,
+          set: {
+            tierId: input.tierId,
+            status: input.status,
+            billingPeriod: input.billingPeriod,
+            updatedAt: new Date(),
+          },
+        })
+        .returning(),
+    );
+    const subscription = upserted[0];
+    if (!subscription) {
+      return yield* Effect.dieMessage("subscription upsert returned no row");
+    }
+    return subscription;
+  });
+
 export const getSubscriptionForAccount = (
   accountId: string,
 ): Effect.Effect<SubscriptionWithTier | null, never, Database> =>

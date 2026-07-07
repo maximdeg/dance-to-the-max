@@ -1,4 +1,5 @@
 import { Layer, ManagedRuntime } from "effect";
+import { BillingLive } from "~/services/Billing";
 import { DatabaseLive } from "~/services/DatabaseLive";
 import { checkHealth, type HealthReport } from "~/services/Health";
 import { MailerLive } from "~/services/Mailer";
@@ -9,7 +10,12 @@ import { VideoProviderLive } from "~/services/VideoProvider";
  * pool) for the life of the server process. Loaders and actions run their
  * Effects through this runtime.
  */
-const AppLayer = Layer.mergeAll(DatabaseLive, MailerLive, VideoProviderLive);
+const AppLayer = Layer.mergeAll(
+  DatabaseLive,
+  MailerLive,
+  VideoProviderLive,
+  BillingLive,
+);
 
 export const runtime = ManagedRuntime.make(AppLayer);
 
