@@ -8,6 +8,7 @@ export default [
   route("forgot-password", "routes/forgot-password.tsx"),
   route("reset-password", "routes/reset-password.tsx"),
   route("account/password", "routes/account.password.tsx"),
+  route("account/subscription", "routes/account.subscription.tsx"),
   route("catalog", "routes/catalog.tsx"),
   route("catalog/:danceId", "routes/catalog.$danceId.tsx"),
   route("catalog/:danceId/:videoId", "routes/catalog.$danceId.$videoId.tsx"),
