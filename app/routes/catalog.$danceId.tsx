@@ -1,19 +1,12 @@
 import { Link } from "react-router";
 import { requireAccount } from "~/auth/auth.server";
+import { pick, levelLabel } from "~/i18n/content";
+import { useLocale, useTranslate } from "~/i18n/context";
 import { runtime } from "~/runtime.server";
 import { getPublishedDanceWithVideos } from "~/services/Catalog";
-import type { Level } from "~/services/Content";
 import { isEntitledTo } from "~/services/Entitlement";
 import { getEntitlement } from "~/services/Subscriptions";
 import type { Route } from "./+types/catalog.$danceId";
-
-const LEVEL_LABELS: Record<Level, string> = {
-  primeras_veces: "Primeras veces",
-  principiante: "Principiante",
-  intermedio: "Intermedio",
-  avanzado: "Avanzado",
-  max: "Max",
-};
 
 export function meta() {
   return [{ title: "Dance · Catalog · Dance To the Max" }];
@@ -35,42 +28,48 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export default function CatalogDance({ loaderData }: Route.ComponentProps) {
   const { catalog, locked } = loaderData;
   const { dance, groups } = catalog;
+  const t = useTranslate();
+  const locale = useLocale();
 
   return (
     <main>
       <p>
-        <Link to="/catalog">← Catalog</Link>
+        <Link to="/catalog">{t("catalog.back")}</Link>
       </p>
-      <h1>
-        {dance.nameEs} / {dance.nameEn}
-      </h1>
+      <h1>{pick(locale, dance.nameEs, dance.nameEn)}</h1>
 
       {locked ? (
         <section>
           <p>
-            🔒 This dance isn't included in your current plan
-            {dance.minTierRank > 1 ? ` (requires Tier ${dance.minTierRank})` : ""}
-            .
+            🔒 {t("dance.locked")}
+            {dance.minTierRank > 1 ? ` (T${dance.minTierRank})` : ""}
           </p>
           <p>
-            <Link to="/pricing">See plans to unlock it</Link>
+            <Link to="/pricing">{t("dance.seePlans")}</Link>
           </p>
         </section>
       ) : (
         groups.map((group) => (
           <section key={group.level}>
-            <h2>{LEVEL_LABELS[group.level]}</h2>
+            <h2>{levelLabel(locale, group.level)}</h2>
             <ul>
-              {group.videos.map((video) => (
-                <li key={video.id}>
-                  <Link to={`/catalog/${dance.id}/${video.id}`}>
-                    <strong>
-                      {video.titleEs} / {video.titleEn}
-                    </strong>
-                  </Link>
-                  {video.descriptionEs ? <p>{video.descriptionEs}</p> : null}
-                </li>
-              ))}
+              {group.videos.map((video) => {
+                const description = pick(
+                  locale,
+                  video.descriptionEs,
+                  video.descriptionEn,
+                );
+                return (
+                  <li key={video.id}>
+                    <Link to={`/catalog/${dance.id}/${video.id}`}>
+                      <strong>
+                        {pick(locale, video.titleEs, video.titleEn)}
+                      </strong>
+                    </Link>
+                    {description ? <p>{description}</p> : null}
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))
