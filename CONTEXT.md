@@ -96,3 +96,7 @@ _Avoid_: token link
 **Testimonial**:
 A curated, Visitor-facing quote of praise shown on the public site (the Home funnel strip and the Comentarios page) as social proof. Marketing content authored by staff and stored in the i18n string catalog — not a Subscriber-posted Comment.
 _Avoid_: Comment, review, feedback
+
+**`Dance.history`**:
+A brief bilingual (es/en) origin/history blurb per Dance, authored by the Super Admin alongside the Dance name and shown on the public "Qué es el ballroom" page. Optional — empty until authored.
+_Avoid_: bio, description

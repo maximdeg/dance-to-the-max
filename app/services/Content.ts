@@ -28,6 +28,10 @@ export interface DanceInput {
   readonly nameEn: string;
   readonly minTierRank: number;
   readonly published: boolean;
+  // Optional bilingual history blurb (public marketing page). Omitted on create
+  // → the column defaults to ""; omitted on update → the existing value stays.
+  readonly historyEs?: string;
+  readonly historyEn?: string;
 }
 
 export const createDance = (

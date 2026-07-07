@@ -126,6 +126,11 @@ export const dances = pgTable("dances", {
   id: uuid("id").primaryKey().defaultRandom(),
   nameEs: text("name_es").notNull(),
   nameEn: text("name_en").notNull(),
+  // A brief bilingual origin/history blurb shown on the public "Qué es el
+  // ballroom" marketing page. Optional content — empty until a Super Admin
+  // authors it — so it defaults to "" rather than being required.
+  historyEs: text("history_es").notNull().default(""),
+  historyEn: text("history_en").notNull().default(""),
   minTierRank: integer("min_tier_rank").notNull().default(1),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })

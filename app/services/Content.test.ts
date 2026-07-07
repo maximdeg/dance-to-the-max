@@ -65,6 +65,31 @@ describe("dances", () => {
     expect(fetched?.id).toBe(dance.id);
   });
 
+  it("persists a bilingual history, defaulting it to empty, and edits it", async () => {
+    const layer = await makeTestDatabaseLayer();
+
+    const authored = await run(
+      createDance(
+        danceInput({ historyEs: "Nació en Viena.", historyEn: "Born in Vienna." }),
+      ).pipe(Effect.provide(layer)),
+    );
+    expect(authored.historyEs).toBe("Nació en Viena.");
+    expect(authored.historyEn).toBe("Born in Vienna.");
+
+    // A Dance authored without a history blurb gets empty strings, not null.
+    const bare = await run(createDance(danceInput()).pipe(Effect.provide(layer)));
+    expect(bare.historyEs).toBe("");
+    expect(bare.historyEn).toBe("");
+
+    const edited = await run(
+      updateDance(
+        authored.id,
+        danceInput({ historyEn: "Origins in the Viennese ballrooms." }),
+      ).pipe(Effect.provide(layer)),
+    );
+    expect(edited.historyEn).toBe("Origins in the Viennese ballrooms.");
+  });
+
   it("edits an existing Dance and rejects an unknown id", async () => {
     const layer = await makeTestDatabaseLayer();
     const dance = await run(createDance(danceInput()).pipe(Effect.provide(layer)));
