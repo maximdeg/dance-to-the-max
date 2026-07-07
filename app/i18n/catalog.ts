@@ -47,10 +47,17 @@ export type Messages = {
   readonly "about.heading": string;
   readonly "about.p1": string;
   readonly "about.p2": string;
+  readonly "about.studioTitle": string;
+  readonly "about.studioP1": string;
   readonly "comentarios.heading": string;
   readonly "comentarios.lead": string;
   readonly "contacto.heading": string;
   readonly "contacto.lead": string;
+  readonly "contacto.emailLabel": string;
+  readonly "contacto.socialLabel": string;
+  readonly "contacto.locationLabel": string;
+  readonly "contacto.hoursLabel": string;
+  readonly "contacto.hours": string;
   // Home funnel (pre-login).
   readonly "home.hero.title": string;
   readonly "home.valueProp.title": string;
@@ -151,10 +158,18 @@ export const catalog: Record<Locale, Messages> = {
       "Bailo y enseño baile de salón desde hace más de veinte años, en pistas, escenarios y salones de práctica de todo el país.",
     "about.p2":
       "Creé Dance To the Max para que cualquiera pueda aprender a bailar con buena técnica y a su propio ritmo, viva donde viva. Cada video es la clase que me hubiese gustado tener cuando empecé.",
+    "about.studioTitle": "El estudio",
+    "about.studioP1":
+      "Dance To the Max es un estudio online que acerca el baile de salón a todo el país: clases pensadas y grabadas por Max, organizadas por danza y por nivel, para que aprendas desde tu casa y a tu ritmo.",
     "comentarios.heading": "Comentarios",
     "comentarios.lead": "Lo que dicen quienes ya bailan con Max.",
     "contacto.heading": "Contacto",
     "contacto.lead": "¿Tenés una duda? Ponete en contacto con el estudio.",
+    "contacto.emailLabel": "Correo",
+    "contacto.socialLabel": "Redes",
+    "contacto.locationLabel": "Dónde estamos",
+    "contacto.hoursLabel": "Horarios",
+    "contacto.hours": "Lunes a viernes, de 10 a 20 h",
     "home.hero.title": "Aprendé a bailar de salón con Max",
     "home.valueProp.title": "¿Por qué Dance To the Max?",
     "home.sampler.title": "Las danzas que vas a aprender",
@@ -246,10 +261,18 @@ export const catalog: Record<Locale, Messages> = {
       "I've danced and taught ballroom for over twenty years — on competition floors, on stage, and in practice halls across the country.",
     "about.p2":
       "I built Dance To the Max so anyone can learn to dance with solid technique at their own pace, wherever they live. Every video is the class I wish I'd had when I started.",
+    "about.studioTitle": "The studio",
+    "about.studioP1":
+      "Dance To the Max is an online studio bringing ballroom dancing to the whole country: classes designed and filmed by Max, organized by dance and by level, so you learn from home at your own pace.",
     "comentarios.heading": "Testimonials",
     "comentarios.lead": "What dancers who already train with Max are saying.",
     "contacto.heading": "Contact",
     "contacto.lead": "Have a question? Get in touch with the studio.",
+    "contacto.emailLabel": "Email",
+    "contacto.socialLabel": "Social",
+    "contacto.locationLabel": "Where we are",
+    "contacto.hoursLabel": "Hours",
+    "contacto.hours": "Monday to Friday, 10am–8pm",
     "home.hero.title": "Learn ballroom dancing with Max",
     "home.valueProp.title": "Why Dance To the Max?",
     "home.sampler.title": "The dances you'll learn",
