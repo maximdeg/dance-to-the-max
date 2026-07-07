@@ -27,7 +27,11 @@ export async function action({ request }: Route.ActionArgs) {
     verifyCredentials(email, password).pipe(Effect.either),
   );
   if (Either.isLeft(result)) {
-    return { error: "Incorrect email or password." };
+    const error =
+      result.left._tag === "AccountBlocked"
+        ? "This account has been blocked. Please contact support."
+        : "Incorrect email or password.";
+    return { error };
   }
 
   const cookie = await startSession(result.right.id);

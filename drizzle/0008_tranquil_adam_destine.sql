@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ADD COLUMN "blocked" boolean DEFAULT false NOT NULL;

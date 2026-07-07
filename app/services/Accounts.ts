@@ -15,6 +15,9 @@ export class InvalidCredentials extends Data.TaggedError(
   "InvalidCredentials",
 )<{}> {}
 
+/** Correct credentials, but the Account has been blocked by an Admin. */
+export class AccountBlocked extends Data.TaggedError("AccountBlocked")<{}> {}
+
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
 /**
@@ -55,7 +58,7 @@ export const signup = (
 export const verifyCredentials = (
   email: string,
   password: string,
-): Effect.Effect<Account, InvalidCredentials, Database> =>
+): Effect.Effect<Account, InvalidCredentials | AccountBlocked, Database> =>
   Effect.gen(function* () {
     const db = yield* Database;
     const normalized = normalizeEmail(email);
@@ -73,6 +76,11 @@ export const verifyCredentials = (
     const ok = yield* verifyPassword(password, account.passwordHash);
     if (!ok) {
       return yield* new InvalidCredentials();
+    }
+    // Checked only after the password verifies, so blocked status is never
+    // revealed to someone who doesn't already hold valid credentials.
+    if (account.blocked) {
+      return yield* new AccountBlocked();
     }
     return account;
   });

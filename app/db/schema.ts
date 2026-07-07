@@ -39,6 +39,9 @@ export const accounts = pgTable(
     email: text("email").notNull(),
     passwordHash: text("password_hash").notNull(),
     role: accountRole("role").notNull().default("subscriber"),
+    // A blocked Account cannot log in and is signed out everywhere. Set by an
+    // Admin from the console; never by self-serve.
+    blocked: boolean("blocked").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
