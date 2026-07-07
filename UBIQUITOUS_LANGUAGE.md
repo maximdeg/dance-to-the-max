@@ -42,9 +42,10 @@ Glossary for v1 (lean validation MVP). The terse canonical version for tooling l
 
 ## Public site
 
-| Term            | Definition                                                                                                             | Aliases to avoid            |
-| --------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **Testimonial** | A curated, Visitor-facing quote of praise on the public site (Home strip, Comentarios page); staff-authored marketing. | Comment, review, feedback   |
+| Term               | Definition                                                                                                             | Aliases to avoid            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Testimonial**    | A curated, Visitor-facing quote of praise on the public site (Home strip, Comentarios page); staff-authored marketing. | Comment, review, feedback   |
+| **`Dance.history`** | A brief bilingual origin/history blurb per Dance, authored by the Super Admin and shown on the public ballroom page.   | bio, description            |
 
 ## Relationships
 

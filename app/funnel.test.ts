@@ -23,6 +23,8 @@ const dance = (minTierRank: number, nameEs = `d${minTierRank}`): Dance => ({
   id: `dance-${nameEs}`,
   nameEs,
   nameEn: nameEs,
+  historyEs: "",
+  historyEn: "",
   minTierRank,
   published: true,
   createdAt: new Date(),

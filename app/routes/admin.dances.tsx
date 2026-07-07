@@ -36,6 +36,8 @@ export async function action({ request }: Route.ActionArgs) {
   // intent === "create"
   const nameEs = String(form.get("nameEs") ?? "").trim();
   const nameEn = String(form.get("nameEn") ?? "").trim();
+  const historyEs = String(form.get("historyEs") ?? "").trim();
+  const historyEn = String(form.get("historyEn") ?? "").trim();
   const minTierRank = Number(form.get("minTierRank") ?? 1);
   const published = form.get("published") === "on";
 
@@ -47,7 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   await runtime.runPromise(
-    createDance({ nameEs, nameEn, minTierRank, published }),
+    createDance({ nameEs, nameEn, historyEs, historyEn, minTierRank, published }),
   );
   return { ok: true };
 }
@@ -120,6 +122,14 @@ export default function AdminDances({
         <label>
           Name (English)
           <input type="text" name="nameEn" required />
+        </label>
+        <label>
+          History (Spanish)
+          <textarea name="historyEs" rows={3} />
+        </label>
+        <label>
+          History (English)
+          <textarea name="historyEn" rows={3} />
         </label>
         <label>
           Minimum tier

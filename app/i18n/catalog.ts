@@ -43,6 +43,7 @@ export type Messages = {
   readonly "ballroom.p1": string;
   readonly "ballroom.p2": string;
   readonly "ballroom.p3": string;
+  readonly "ballroom.dancesTitle": string;
   readonly "about.heading": string;
   readonly "about.p1": string;
   readonly "about.p2": string;
@@ -144,6 +145,7 @@ export const catalog: Record<Locale, Messages> = {
       "Nació en los salones europeos de los siglos XVIII y XIX y se fue nutriendo de ritmos de todo el mundo, del vals vienés al tango rioplatense, hasta volverse el repertorio elegante y variado que conocemos hoy.",
     "ballroom.p3":
       "En Dance To the Max lo aprendés por danza y por nivel, con videos que podés repetir las veces que quieras.",
+    "ballroom.dancesTitle": "Las danzas del ballroom",
     "about.heading": "Hola, soy Max",
     "about.p1":
       "Bailo y enseño baile de salón desde hace más de veinte años, en pistas, escenarios y salones de práctica de todo el país.",
@@ -238,6 +240,7 @@ export const catalog: Record<Locale, Messages> = {
       "It grew out of the European ballrooms of the 18th and 19th centuries and drew in rhythms from around the world — from the Viennese waltz to the Río de la Plata tango — becoming the elegant, varied repertoire we know today.",
     "ballroom.p3":
       "At Dance To the Max you learn it dance by dance and level by level, with videos you can replay as many times as you like.",
+    "ballroom.dancesTitle": "The dances of ballroom",
     "about.heading": "Hi, I'm Max",
     "about.p1":
       "I've danced and taught ballroom for over twenty years — on competition floors, on stage, and in practice halls across the country.",

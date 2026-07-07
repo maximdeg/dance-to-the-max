@@ -46,15 +46,22 @@ export async function action({ request, params }: Route.ActionArgs) {
   if (intent === "update-dance") {
     const nameEs = String(form.get("nameEs") ?? "").trim();
     const nameEn = String(form.get("nameEn") ?? "").trim();
+    const historyEs = String(form.get("historyEs") ?? "").trim();
+    const historyEn = String(form.get("historyEn") ?? "").trim();
     const minTierRank = Number(form.get("minTierRank") ?? 1);
     const published = form.get("published") === "on";
     if (!nameEs || !nameEn) {
       return { error: "Both names are required." };
     }
     const result = await runtime.runPromise(
-      updateDance(danceId, { nameEs, nameEn, minTierRank, published }).pipe(
-        Effect.either,
-      ),
+      updateDance(danceId, {
+        nameEs,
+        nameEn,
+        historyEs,
+        historyEn,
+        minTierRank,
+        published,
+      }).pipe(Effect.either),
     );
     return Either.isLeft(result)
       ? { error: "Could not update the dance." }
@@ -139,6 +146,14 @@ export default function AdminDanceDetail({
         <label>
           Name (English)
           <input type="text" name="nameEn" defaultValue={dance.nameEn} required />
+        </label>
+        <label>
+          History (Spanish)
+          <textarea name="historyEs" rows={3} defaultValue={dance.historyEs} />
+        </label>
+        <label>
+          History (English)
+          <textarea name="historyEn" rows={3} defaultValue={dance.historyEn} />
         </label>
         <label>
           Minimum tier

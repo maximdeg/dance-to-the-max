@@ -78,6 +78,13 @@
       "when": 1783434770699,
       "tag": "0010_reflective_crystal",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783455384281,
+      "tag": "0011_woozy_starjammers",
+      "breakpoints": true
     }
   ]
 }
