@@ -63,9 +63,11 @@ export default function CatalogDance({ loaderData }: Route.ComponentProps) {
             <ul>
               {group.videos.map((video) => (
                 <li key={video.id}>
-                  <strong>
-                    {video.titleEs} / {video.titleEn}
-                  </strong>
+                  <Link to={`/catalog/${dance.id}/${video.id}`}>
+                    <strong>
+                      {video.titleEs} / {video.titleEn}
+                    </strong>
+                  </Link>
                   {video.descriptionEs ? <p>{video.descriptionEs}</p> : null}
                 </li>
               ))}
