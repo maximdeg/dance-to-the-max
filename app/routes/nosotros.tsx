@@ -21,6 +21,9 @@ export default function Nosotros() {
       <p>{t("about.p1")}</p>
       <p>{t("about.p2")}</p>
 
+      <h2>{t("about.studioTitle")}</h2>
+      <p>{t("about.studioP1")}</p>
+
       <p>{t("cta.prompt")}</p>
       <p>
         <Link to="/signup">{t("cta.startFree")}</Link>

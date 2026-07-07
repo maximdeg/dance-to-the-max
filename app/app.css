@@ -194,6 +194,15 @@ body {
   margin: 2rem 0;
 }
 
+.contact-info dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.contact-info dd {
+  margin-left: 0;
+}
+
 .badge {
   font-size: 0.8rem;
   padding: 0.15rem 0.5rem;
