@@ -31,11 +31,6 @@ export default function Ballroom() {
         {" · "}
         <Link to="/pricing">{t("cta.seePlans")}</Link>
       </p>
-      <nav aria-label={t("landing.explore")}>
-        <Link to="/">{t("app.name")}</Link>
-        {" · "}
-        <Link to="/nosotros">{t("nav.about")}</Link>
-      </nav>
     </main>
   );
 }
