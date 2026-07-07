@@ -8,6 +8,7 @@ import {
   activateSubscription,
   getEntitlement,
   getSubscriptionForAccount,
+  updateSubscriptionByProviderId,
 } from "./Subscriptions";
 import type { WebhookEvent } from "./StripeWebhooks";
 import { listTiers, seedTiers } from "./Tiers";
@@ -121,6 +122,39 @@ describe("applyWebhookEvent", () => {
     expect(current?.subscription.status).toBe("trialing");
     expect(current?.subscription.currentPeriodEnd).toEqual(INITIAL_PERIOD_END);
     expect(await hasAccess(layer, account.id)).toBe(true);
+  });
+
+  it("applies a scheduled downgrade at the next renewal", async () => {
+    const layer = await makeTestDatabaseLayer();
+    const { account } = await setup(layer);
+    const tiers = await Effect.runPromise(
+      listTiers().pipe(Effect.provide(layer)),
+    );
+    const rank1 = tiers.find((t) => t.rank === 1)!;
+
+    // Schedule a downgrade to Tier 1 (the setup subscription is on Tier 2).
+    await Effect.runPromise(
+      updateSubscriptionByProviderId(PROVIDER_ID, {
+        pendingTierId: rank1.id,
+      }).pipe(Effect.provide(layer)),
+    );
+
+    const newEnd = new Date("2026-09-01T00:00:00.000Z");
+    const outcome = await apply(layer, {
+      type: "updated",
+      providerSubscriptionId: PROVIDER_ID,
+      status: "active",
+      currentPeriodEnd: newEnd,
+    });
+
+    expect(outcome._tag).toBe("applied");
+    const current = await Effect.runPromise(
+      getSubscriptionForAccount(account.id).pipe(Effect.provide(layer)),
+    );
+    // The new period starts on Tier 1, schedule cleared.
+    expect(current?.tier.rank).toBe(1);
+    expect(current?.subscription.pendingTierId).toBeNull();
+    expect(current?.subscription.currentPeriodEnd).toEqual(newEnd);
   });
 
   it("ignores an event for a subscription it doesn't track", async () => {

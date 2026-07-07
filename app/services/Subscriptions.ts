@@ -21,10 +21,17 @@ export interface SubscriptionInput {
   readonly currentPeriodEnd?: Date;
 }
 
-/** A partial lifecycle update applied by a webhook event. */
+/**
+ * A partial update to a Subscription — applied by a webhook event (status,
+ * period end) or a management action (tier switch, a scheduled downgrade in
+ * `pendingTierId`, `cancelAtPeriodEnd`). A `null` clears the column.
+ */
 export interface SubscriptionPatch {
   readonly status?: Subscription["status"];
   readonly currentPeriodEnd?: Date;
+  readonly tierId?: string;
+  readonly pendingTierId?: string | null;
+  readonly cancelAtPeriodEnd?: boolean;
 }
 
 /** Create a Subscription for an Account (manual/seeded until Stripe, #10). */
@@ -65,6 +72,10 @@ export const activateSubscription = (
             billingPeriod: input.billingPeriod,
             providerSubscriptionId: input.providerSubscriptionId,
             currentPeriodEnd: input.currentPeriodEnd,
+            // A fresh checkout (incl. a lapsed Account re-subscribing) clears
+            // any previously scheduled cancel/downgrade.
+            cancelAtPeriodEnd: false,
+            pendingTierId: null,
             updatedAt: new Date(),
           },
         })
@@ -93,6 +104,43 @@ export const updateSubscriptionByProviderId = (
         .update(subscriptions)
         .set({ ...patch, updatedAt: new Date() })
         .where(eq(subscriptions.providerSubscriptionId, providerSubscriptionId))
+        .returning(),
+    );
+    return updated[0] ?? null;
+  });
+
+/** The Subscription with this provider id, or null. Used by the webhook path. */
+export const getSubscriptionByProviderId = (
+  providerSubscriptionId: string,
+): Effect.Effect<Subscription | null, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const rows = yield* Effect.promise(() =>
+      db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.providerSubscriptionId, providerSubscriptionId))
+        .limit(1),
+    );
+    return rows[0] ?? null;
+  });
+
+/**
+ * Apply a patch to an Account's Subscription (management actions act by the
+ * signed-in Account, not a provider id). Returns the updated row, or null when
+ * the Account has no Subscription.
+ */
+export const updateSubscriptionByAccount = (
+  accountId: string,
+  patch: SubscriptionPatch,
+): Effect.Effect<Subscription | null, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const updated = yield* Effect.promise(() =>
+      db
+        .update(subscriptions)
+        .set({ ...patch, updatedAt: new Date() })
+        .where(eq(subscriptions.accountId, accountId))
         .returning(),
     );
     return updated[0] ?? null;

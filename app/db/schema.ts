@@ -245,6 +245,14 @@ export const subscriptions = pgTable(
     providerSubscriptionId: text("provider_subscription_id"),
     // End of the current paid (or trial) period; advanced by webhook events.
     currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+    // Set by a cancel request: access continues until currentPeriodEnd, then a
+    // provider event flips status to canceled. Informational until then.
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+    // A downgrade scheduled to take effect at the next renewal (a lower Tier).
+    // An upgrade is immediate and never uses this.
+    pendingTierId: uuid("pending_tier_id").references(() => tiers.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
