@@ -3,6 +3,7 @@ import { BillingLive } from "~/services/Billing";
 import { DatabaseLive } from "~/services/DatabaseLive";
 import { checkHealth, type HealthReport } from "~/services/Health";
 import { MailerLive } from "~/services/Mailer";
+import { WebhookVerifierLive } from "~/services/StripeWebhooks";
 import { VideoProviderLive } from "~/services/VideoProvider";
 
 /**
@@ -15,6 +16,7 @@ const AppLayer = Layer.mergeAll(
   MailerLive,
   VideoProviderLive,
   BillingLive,
+  WebhookVerifierLive,
 );
 
 export const runtime = ManagedRuntime.make(AppLayer);

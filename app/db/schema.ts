@@ -240,6 +240,11 @@ export const subscriptions = pgTable(
       .references(() => tiers.id, { onDelete: "restrict" }),
     status: subscriptionStatus("status").notNull(),
     billingPeriod: billingPeriod("billing_period").notNull(),
+    // The payment provider's own id for this subscription — the key webhook
+    // events correlate against. Null for rows created before Stripe / seeded.
+    providerSubscriptionId: text("provider_subscription_id"),
+    // End of the current paid (or trial) period; advanced by webhook events.
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -247,5 +252,10 @@ export const subscriptions = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [uniqueIndex("subscriptions_account_unique").on(table.accountId)],
+  (table) => [
+    uniqueIndex("subscriptions_account_unique").on(table.accountId),
+    uniqueIndex("subscriptions_provider_sub_unique").on(
+      table.providerSubscriptionId,
+    ),
+  ],
 );

@@ -237,6 +237,7 @@ describe("fulfillCheckout", () => {
           tierId: tier.id,
           billingPeriod: "monthly" as const,
           trial: true,
+          providerSubscriptionId: "sub_stub_open",
         }),
     });
 

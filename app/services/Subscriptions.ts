@@ -17,6 +17,14 @@ export interface SubscriptionInput {
   readonly tierId: string;
   readonly status: Subscription["status"];
   readonly billingPeriod: Subscription["billingPeriod"];
+  readonly providerSubscriptionId?: string;
+  readonly currentPeriodEnd?: Date;
+}
+
+/** A partial lifecycle update applied by a webhook event. */
+export interface SubscriptionPatch {
+  readonly status?: Subscription["status"];
+  readonly currentPeriodEnd?: Date;
 }
 
 /** Create a Subscription for an Account (manual/seeded until Stripe, #10). */
@@ -55,6 +63,8 @@ export const activateSubscription = (
             tierId: input.tierId,
             status: input.status,
             billingPeriod: input.billingPeriod,
+            providerSubscriptionId: input.providerSubscriptionId,
+            currentPeriodEnd: input.currentPeriodEnd,
             updatedAt: new Date(),
           },
         })
@@ -65,6 +75,27 @@ export const activateSubscription = (
       return yield* Effect.dieMessage("subscription upsert returned no row");
     }
     return subscription;
+  });
+
+/**
+ * Apply a lifecycle patch to the Subscription with this provider id, returning
+ * the updated row — or null when no Subscription matches (an event for a
+ * subscription we don't track, which the caller safely ignores).
+ */
+export const updateSubscriptionByProviderId = (
+  providerSubscriptionId: string,
+  patch: SubscriptionPatch,
+): Effect.Effect<Subscription | null, never, Database> =>
+  Effect.gen(function* () {
+    const db = yield* Database;
+    const updated = yield* Effect.promise(() =>
+      db
+        .update(subscriptions)
+        .set({ ...patch, updatedAt: new Date() })
+        .where(eq(subscriptions.providerSubscriptionId, providerSubscriptionId))
+        .returning(),
+    );
+    return updated[0] ?? null;
   });
 
 export const getSubscriptionForAccount = (
