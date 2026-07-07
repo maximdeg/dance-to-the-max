@@ -3,7 +3,6 @@ import { Form, Link } from "react-router";
 import { requireSuperAdmin } from "~/auth/auth.server";
 import { runtime } from "~/runtime.server";
 import {
-  createVideo,
   getDance,
   LEVELS,
   listTags,
@@ -12,6 +11,7 @@ import {
   updateDance,
   type Level,
 } from "~/services/Content";
+import { createUploadedVideo } from "~/services/VideoIngest";
 import type { Route } from "./+types/admin.dances.$danceId";
 
 const LEVEL_LABELS: Record<Level, string> = {
@@ -81,22 +81,36 @@ export async function action({ request, params }: Route.ActionArgs) {
     return { error: "Choose a level." };
   }
 
+  const file = form.get("videoFile");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose a video file to upload." };
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+
   const result = await runtime.runPromise(
-    createVideo({
-      danceId,
-      level: videoLevel,
-      titleEs,
-      titleEn,
-      descriptionEs: String(form.get("descriptionEs") ?? ""),
-      descriptionEn: String(form.get("descriptionEn") ?? ""),
-      providerAssetId: String(form.get("providerAssetId") ?? "").trim(),
-      published: form.get("published") === "on",
-      tagIds: form.getAll("tagIds").map(String),
-    }).pipe(Effect.either),
+    createUploadedVideo(
+      {
+        danceId,
+        level: videoLevel,
+        titleEs,
+        titleEn,
+        descriptionEs: String(form.get("descriptionEs") ?? ""),
+        descriptionEn: String(form.get("descriptionEn") ?? ""),
+        published: form.get("published") === "on",
+        tagIds: form.getAll("tagIds").map(String),
+      },
+      { filename: file.name, contentType: file.type, bytes },
+    ).pipe(Effect.either),
   );
-  return Either.isLeft(result)
-    ? { error: "Could not create the video." }
-    : { ok: true };
+  if (Either.isLeft(result)) {
+    return {
+      error:
+        result.left._tag === "VideoIngestError"
+          ? `Upload failed: ${result.left.reason}`
+          : "Could not create the video.",
+    };
+  }
+  return { ok: true };
 }
 
 export default function AdminDanceDetail({
@@ -197,7 +211,7 @@ export default function AdminDanceDetail({
       </table>
 
       <h2>New video</h2>
-      <Form method="post">
+      <Form method="post" encType="multipart/form-data">
         <input type="hidden" name="intent" value="create-video" />
         <label>
           Level
@@ -229,8 +243,8 @@ export default function AdminDanceDetail({
           <textarea name="descriptionEn" />
         </label>
         <label>
-          Provider asset id
-          <input type="text" name="providerAssetId" />
+          Video file
+          <input type="file" name="videoFile" accept="video/*" required />
         </label>
         <fieldset>
           <legend>Tags</legend>

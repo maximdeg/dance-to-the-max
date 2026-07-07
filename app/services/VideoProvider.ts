@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { Context, Effect, Layer } from "effect";
+import { Context, Data, Effect, Layer } from "effect";
 
 /** A signed playback URL and the instant it stops working. Short-lived by design. */
 export interface SignedPlayback {
@@ -13,14 +13,39 @@ export interface SignPlaybackRequest {
   readonly ttlSeconds?: number;
 }
 
+/** An uploaded file handed to the provider for ingest/transcode. */
+export interface IngestRequest {
+  readonly filename: string;
+  readonly contentType: string;
+  readonly bytes: Uint8Array;
+}
+
+/** Transcode state of an ingested asset (a real provider transcodes async). */
+export type IngestStatus = "processing" | "ready";
+
+export interface IngestedAsset {
+  readonly providerAssetId: string;
+  readonly status: IngestStatus;
+}
+
+/** Ingest failed — a bad file, or the provider rejecting/erroring. Surfaced to
+ * the Super Admin rather than swallowed. */
+export class VideoIngestError extends Data.TaggedError("VideoIngestError")<{
+  readonly reason: string;
+}> {}
+
 /**
  * The hosted video provider, behind an interface so the real streaming service
- * can be swapped in later and tests can stub it. Its one job is to mint a
- * short-lived Signed URL for an asset the caller has *already* been authorized
- * to watch — authorization (the Entitlement check) lives above it, in Playback,
- * so this seam never sees an un-gated request.
+ * can be swapped in later and tests can stub it. It does two things: `ingest` a
+ * newly uploaded file and return the asset id to store on the Video, and
+ * `signPlaybackUrl` for an asset the caller has *already* been authorized to
+ * watch — authorization (the Entitlement check) lives above it, in Playback,
+ * so this seam never sees an un-gated playback request.
  */
 export interface VideoProviderService {
+  readonly ingest: (
+    request: IngestRequest,
+  ) => Effect.Effect<IngestedAsset, VideoIngestError>;
   readonly signPlaybackUrl: (
     request: SignPlaybackRequest,
   ) => Effect.Effect<SignedPlayback>;
@@ -42,6 +67,21 @@ export const DEFAULT_TTL_SECONDS = 300;
  * provider lands.
  */
 export const VideoProviderLive = Layer.succeed(VideoProvider, {
+  ingest: ({ contentType, bytes }) =>
+    Effect.gen(function* () {
+      if (bytes.length === 0) {
+        return yield* new VideoIngestError({ reason: "The file is empty." });
+      }
+      if (!contentType.startsWith("video/")) {
+        return yield* new VideoIngestError({
+          reason: "Only video files can be uploaded.",
+        });
+      }
+      // A real provider returns its own id and transcodes asynchronously; the
+      // placeholder mints an opaque id and reports it ready immediately.
+      const providerAssetId = `asset_${randomBytes(12).toString("hex")}`;
+      return { providerAssetId, status: "ready" as const };
+    }),
   signPlaybackUrl: ({ providerAssetId, ttlSeconds = DEFAULT_TTL_SECONDS }) =>
     Effect.sync(() => {
       const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
