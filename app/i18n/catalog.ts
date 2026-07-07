@@ -50,6 +50,20 @@ export type Messages = {
   readonly "comentarios.lead": string;
   readonly "contacto.heading": string;
   readonly "contacto.lead": string;
+  // Home funnel (pre-login).
+  readonly "home.hero.title": string;
+  readonly "home.valueProp.title": string;
+  readonly "home.sampler.title": string;
+  readonly "home.sampler.unlockWith": string;
+  readonly "home.plans.title": string;
+  readonly "home.plans.subtitle": string;
+  readonly "home.plans.monthly": string;
+  readonly "home.plans.annual": string;
+  readonly "home.plans.perMonth": string;
+  readonly "home.plans.perYear": string;
+  readonly "home.plans.save": string;
+  readonly "home.plans.includes": string;
+  readonly "home.testimonials.title": string;
   // Catalog.
   readonly "catalog.title": string;
   readonly "catalog.level": string;
@@ -139,6 +153,19 @@ export const catalog: Record<Locale, Messages> = {
     "comentarios.lead": "Lo que dicen quienes ya bailan con Max.",
     "contacto.heading": "Contacto",
     "contacto.lead": "¿Tenés una duda? Ponete en contacto con el estudio.",
+    "home.hero.title": "Aprendé a bailar de salón con Max",
+    "home.valueProp.title": "¿Por qué Dance To the Max?",
+    "home.sampler.title": "Las danzas que vas a aprender",
+    "home.sampler.unlockWith": "Desbloqueás con",
+    "home.plans.title": "Elegí tu plan",
+    "home.plans.subtitle": "Todos los planes arrancan con una prueba gratis.",
+    "home.plans.monthly": "Mensual",
+    "home.plans.annual": "Anual",
+    "home.plans.perMonth": "/mes",
+    "home.plans.perYear": "/año",
+    "home.plans.save": "Ahorrás",
+    "home.plans.includes": "Incluye",
+    "home.testimonials.title": "Lo que dicen quienes bailan con Max",
     "catalog.title": "Catálogo",
     "catalog.level": "Nivel",
     "catalog.tag": "Etiqueta",
@@ -220,6 +247,19 @@ export const catalog: Record<Locale, Messages> = {
     "comentarios.lead": "What dancers who already train with Max are saying.",
     "contacto.heading": "Contact",
     "contacto.lead": "Have a question? Get in touch with the studio.",
+    "home.hero.title": "Learn ballroom dancing with Max",
+    "home.valueProp.title": "Why Dance To the Max?",
+    "home.sampler.title": "The dances you'll learn",
+    "home.sampler.unlockWith": "Unlock with",
+    "home.plans.title": "Choose your plan",
+    "home.plans.subtitle": "Every plan starts with a free trial.",
+    "home.plans.monthly": "Monthly",
+    "home.plans.annual": "Annual",
+    "home.plans.perMonth": "/mo",
+    "home.plans.perYear": "/yr",
+    "home.plans.save": "Save",
+    "home.plans.includes": "Includes",
+    "home.testimonials.title": "What dancers who train with Max say",
     "catalog.title": "Catalog",
     "catalog.level": "Level",
     "catalog.tag": "Tag",
