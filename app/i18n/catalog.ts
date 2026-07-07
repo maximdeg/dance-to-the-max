@@ -25,6 +25,22 @@ export type Messages = {
   // Home.
   readonly "home.signedInAs": string;
   readonly "home.browseCatalog": string;
+  // Public marketing site (pre-login).
+  readonly "nav.ballroom": string;
+  readonly "nav.about": string;
+  readonly "cta.startFree": string;
+  readonly "cta.seePlans": string;
+  readonly "cta.prompt": string;
+  readonly "landing.lead": string;
+  readonly "landing.forWho": string;
+  readonly "landing.explore": string;
+  readonly "ballroom.heading": string;
+  readonly "ballroom.p1": string;
+  readonly "ballroom.p2": string;
+  readonly "ballroom.p3": string;
+  readonly "about.heading": string;
+  readonly "about.p1": string;
+  readonly "about.p2": string;
   // Catalog.
   readonly "catalog.title": string;
   readonly "catalog.level": string;
@@ -83,6 +99,28 @@ export const catalog: Record<Locale, Messages> = {
     "nav.language": "Idioma",
     "home.signedInAs": "Sesión iniciada como",
     "home.browseCatalog": "Explorá el catálogo",
+    "nav.ballroom": "Qué es el ballroom",
+    "nav.about": "Nosotros",
+    "cta.startFree": "Empezá gratis",
+    "cta.seePlans": "Ver planes",
+    "cta.prompt": "¿Listo para dar el primer paso?",
+    "landing.lead":
+      "Clases de baile de salón en video, guiadas por Max: a tu ritmo y desde donde estés.",
+    "landing.forWho":
+      "Desde tus primeras veces hasta el nivel Max, seguí cada danza paso a paso y desbloqueá más a medida que avanzás.",
+    "landing.explore": "Conocé más",
+    "ballroom.heading": "Qué es el ballroom",
+    "ballroom.p1":
+      "El baile de salón —ballroom— es un conjunto de danzas en pareja que se bailan en pista, con roles de guía y seguimiento y una conexión que se siente en cada paso.",
+    "ballroom.p2":
+      "Nació en los salones europeos de los siglos XVIII y XIX y se fue nutriendo de ritmos de todo el mundo, del vals vienés al tango rioplatense, hasta volverse el repertorio elegante y variado que conocemos hoy.",
+    "ballroom.p3":
+      "En Dance To the Max lo aprendés por danza y por nivel, con videos que podés repetir las veces que quieras.",
+    "about.heading": "Hola, soy Max",
+    "about.p1":
+      "Bailo y enseño baile de salón desde hace más de veinte años, en pistas, escenarios y salones de práctica de todo el país.",
+    "about.p2":
+      "Creé Dance To the Max para que cualquiera pueda aprender a bailar con buena técnica y a su propio ritmo, viva donde viva. Cada video es la clase que me hubiese gustado tener cuando empecé.",
     "catalog.title": "Catálogo",
     "catalog.level": "Nivel",
     "catalog.tag": "Etiqueta",
@@ -133,6 +171,28 @@ export const catalog: Record<Locale, Messages> = {
     "nav.language": "Language",
     "home.signedInAs": "Signed in as",
     "home.browseCatalog": "Browse the catalog",
+    "nav.ballroom": "What is ballroom",
+    "nav.about": "About Max",
+    "cta.startFree": "Start free",
+    "cta.seePlans": "See plans",
+    "cta.prompt": "Ready to take the first step?",
+    "landing.lead":
+      "Ballroom dance classes on video, guided by Max — at your pace, from anywhere.",
+    "landing.forWho":
+      "From your first steps to the Max level, follow each dance step by step and unlock more as you progress.",
+    "landing.explore": "Learn more",
+    "ballroom.heading": "What is ballroom",
+    "ballroom.p1":
+      "Ballroom is a family of partner dances performed on the floor, with a lead and a follow and a connection you feel in every step.",
+    "ballroom.p2":
+      "It grew out of the European ballrooms of the 18th and 19th centuries and drew in rhythms from around the world — from the Viennese waltz to the Río de la Plata tango — becoming the elegant, varied repertoire we know today.",
+    "ballroom.p3":
+      "At Dance To the Max you learn it dance by dance and level by level, with videos you can replay as many times as you like.",
+    "about.heading": "Hi, I'm Max",
+    "about.p1":
+      "I've danced and taught ballroom for over twenty years — on competition floors, on stage, and in practice halls across the country.",
+    "about.p2":
+      "I built Dance To the Max so anyone can learn to dance with solid technique at their own pace, wherever they live. Every video is the class I wish I'd had when I started.",
     "catalog.title": "Catalog",
     "catalog.level": "Level",
     "catalog.tag": "Tag",

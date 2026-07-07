@@ -22,6 +22,15 @@ describe("translate", () => {
       "No videos match those filters.",
     );
   });
+
+  it("translates the public marketing copy per locale", () => {
+    expect(translate("es", "ballroom.heading")).toBe("Qué es el ballroom");
+    expect(translate("en", "ballroom.heading")).toBe("What is ballroom");
+    expect(translate("es", "about.heading")).toBe("Hola, soy Max");
+    expect(translate("en", "about.heading")).toBe("Hi, I'm Max");
+    expect(translate("es", "cta.startFree")).toBe("Empezá gratis");
+    expect(translate("en", "cta.startFree")).toBe("Start free");
+  });
 });
 
 describe("message catalog", () => {
