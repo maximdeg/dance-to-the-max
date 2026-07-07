@@ -188,3 +188,64 @@ export const videoTags = pgTable(
   },
   (table) => [primaryKey({ columns: [table.videoId, table.tagId] })],
 );
+
+/**
+ * A subscription Tier (T1/T2/T3). `rank` is the cumulative ladder position — a
+ * higher rank unlocks every Dance a lower rank does, plus more. Prices are in
+ * integer cents; the Tier rows are seeded canonical reference data (`db:seed`).
+ */
+export const tiers = pgTable(
+  "tiers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    rank: integer("rank").notNull(),
+    nameEs: text("name_es").notNull(),
+    nameEn: text("name_en").notNull(),
+    monthlyPriceCents: integer("monthly_price_cents").notNull(),
+    annualPriceCents: integer("annual_price_cents").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("tiers_rank_unique").on(table.rank)],
+);
+
+/**
+ * Subscription lifecycle status. trialing/active/past_due all grant access;
+ * canceled ends it (see the Entitlement check).
+ */
+export const subscriptionStatus = pgEnum("subscription_status", [
+  "trialing",
+  "active",
+  "past_due",
+  "canceled",
+]);
+
+export const billingPeriod = pgEnum("billing_period", ["monthly", "annual"]);
+
+/**
+ * A Subscriber's agreement to one Tier on one Billing Period, carrying a
+ * lifecycle status. One per Account for now (created manually/seeded until
+ * Stripe lands in #10/#11).
+ */
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    tierId: uuid("tier_id")
+      .notNull()
+      .references(() => tiers.id, { onDelete: "restrict" }),
+    status: subscriptionStatus("status").notNull(),
+    billingPeriod: billingPeriod("billing_period").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("subscriptions_account_unique").on(table.accountId)],
+);

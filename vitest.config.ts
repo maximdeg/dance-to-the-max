@@ -8,5 +8,10 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["app/**/*.test.ts", "test/**/*.test.ts"],
+    // Each DB test spins up a fresh PGLite and replays every migration. With the
+    // full suite cold-starting PGLite across many files in parallel, that first
+    // per-file setup can exceed Vitest's default 5s, so give it real headroom.
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });

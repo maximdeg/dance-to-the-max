@@ -3,6 +3,8 @@ import { requireAccount } from "~/auth/auth.server";
 import { runtime } from "~/runtime.server";
 import { getPublishedDanceWithVideos } from "~/services/Catalog";
 import type { Level } from "~/services/Content";
+import { isEntitledTo } from "~/services/Entitlement";
+import { getEntitlement } from "~/services/Subscriptions";
 import type { Route } from "./+types/catalog.$danceId";
 
 const LEVEL_LABELS: Record<Level, string> = {
@@ -18,17 +20,21 @@ export function meta() {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-  await requireAccount(request);
+  const account = await requireAccount(request);
   const catalog = await runtime.runPromise(
     getPublishedDanceWithVideos(params.danceId),
   );
   // Hidden from the Catalog (unpublished, or no published Videos) → 404.
   if (!catalog) throw new Response("Not Found", { status: 404 });
-  return { catalog };
+
+  const entitlement = await runtime.runPromise(getEntitlement(account.id));
+  const locked = !isEntitledTo(entitlement, catalog.dance);
+  return { catalog, locked };
 }
 
 export default function CatalogDance({ loaderData }: Route.ComponentProps) {
-  const { dance, groups } = loaderData.catalog;
+  const { catalog, locked } = loaderData;
+  const { dance, groups } = catalog;
 
   return (
     <main>
@@ -39,21 +45,34 @@ export default function CatalogDance({ loaderData }: Route.ComponentProps) {
         {dance.nameEs} / {dance.nameEn}
       </h1>
 
-      {groups.map((group) => (
-        <section key={group.level}>
-          <h2>{LEVEL_LABELS[group.level]}</h2>
-          <ul>
-            {group.videos.map((video) => (
-              <li key={video.id}>
-                <strong>
-                  {video.titleEs} / {video.titleEn}
-                </strong>
-                {video.descriptionEs ? <p>{video.descriptionEs}</p> : null}
-              </li>
-            ))}
-          </ul>
+      {locked ? (
+        <section>
+          <p>
+            🔒 This dance isn't included in your current plan
+            {dance.minTierRank > 1 ? ` (requires Tier ${dance.minTierRank})` : ""}
+            .
+          </p>
+          <p>
+            <Link to="/pricing">See plans to unlock it</Link>
+          </p>
         </section>
-      ))}
+      ) : (
+        groups.map((group) => (
+          <section key={group.level}>
+            <h2>{LEVEL_LABELS[group.level]}</h2>
+            <ul>
+              {group.videos.map((video) => (
+                <li key={video.id}>
+                  <strong>
+                    {video.titleEs} / {video.titleEn}
+                  </strong>
+                  {video.descriptionEs ? <p>{video.descriptionEs}</p> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      )}
     </main>
   );
 }
