@@ -28,6 +28,11 @@ export type Messages = {
   // Public marketing site (pre-login).
   readonly "nav.ballroom": string;
   readonly "nav.about": string;
+  readonly "nav.comentarios": string;
+  readonly "nav.contacto": string;
+  readonly "nav.ingresar": string;
+  readonly "nav.menu": string;
+  readonly "nav.primary": string;
   readonly "cta.startFree": string;
   readonly "cta.seePlans": string;
   readonly "cta.prompt": string;
@@ -41,6 +46,10 @@ export type Messages = {
   readonly "about.heading": string;
   readonly "about.p1": string;
   readonly "about.p2": string;
+  readonly "comentarios.heading": string;
+  readonly "comentarios.lead": string;
+  readonly "contacto.heading": string;
+  readonly "contacto.lead": string;
   // Catalog.
   readonly "catalog.title": string;
   readonly "catalog.level": string;
@@ -101,6 +110,11 @@ export const catalog: Record<Locale, Messages> = {
     "home.browseCatalog": "Explorá el catálogo",
     "nav.ballroom": "Qué es el ballroom",
     "nav.about": "Nosotros",
+    "nav.comentarios": "Comentarios",
+    "nav.contacto": "Contacto",
+    "nav.ingresar": "Ingresar",
+    "nav.menu": "Menú",
+    "nav.primary": "Navegación principal",
     "cta.startFree": "Empezá gratis",
     "cta.seePlans": "Ver planes",
     "cta.prompt": "¿Listo para dar el primer paso?",
@@ -121,6 +135,10 @@ export const catalog: Record<Locale, Messages> = {
       "Bailo y enseño baile de salón desde hace más de veinte años, en pistas, escenarios y salones de práctica de todo el país.",
     "about.p2":
       "Creé Dance To the Max para que cualquiera pueda aprender a bailar con buena técnica y a su propio ritmo, viva donde viva. Cada video es la clase que me hubiese gustado tener cuando empecé.",
+    "comentarios.heading": "Comentarios",
+    "comentarios.lead": "Lo que dicen quienes ya bailan con Max.",
+    "contacto.heading": "Contacto",
+    "contacto.lead": "¿Tenés una duda? Ponete en contacto con el estudio.",
     "catalog.title": "Catálogo",
     "catalog.level": "Nivel",
     "catalog.tag": "Etiqueta",
@@ -173,6 +191,11 @@ export const catalog: Record<Locale, Messages> = {
     "home.browseCatalog": "Browse the catalog",
     "nav.ballroom": "What is ballroom",
     "nav.about": "About Max",
+    "nav.comentarios": "Testimonials",
+    "nav.contacto": "Contact",
+    "nav.ingresar": "Log in",
+    "nav.menu": "Menu",
+    "nav.primary": "Main navigation",
     "cta.startFree": "Start free",
     "cta.seePlans": "See plans",
     "cta.prompt": "Ready to take the first step?",
@@ -193,6 +216,10 @@ export const catalog: Record<Locale, Messages> = {
       "I've danced and taught ballroom for over twenty years — on competition floors, on stage, and in practice halls across the country.",
     "about.p2":
       "I built Dance To the Max so anyone can learn to dance with solid technique at their own pace, wherever they live. Every video is the class I wish I'd had when I started.",
+    "comentarios.heading": "Testimonials",
+    "comentarios.lead": "What dancers who already train with Max are saying.",
+    "contacto.heading": "Contact",
+    "contacto.lead": "Have a question? Get in touch with the studio.",
     "catalog.title": "Catalog",
     "catalog.level": "Level",
     "catalog.tag": "Tag",

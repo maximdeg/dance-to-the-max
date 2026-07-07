@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import {
-  Form,
   Links,
   Meta,
   Outlet,
@@ -9,9 +8,11 @@ import {
   useLocation,
   useRouteLoaderData,
 } from "react-router";
-import { defaultLocale, type Locale } from "~/i18n/catalog";
-import { LocaleProvider, useTranslate } from "~/i18n/context";
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
+import { defaultLocale } from "~/i18n/catalog";
+import { LocaleProvider } from "~/i18n/context";
 import { getLocale } from "~/i18n/locale.server";
+import { isPublicPath } from "~/public-nav";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -42,42 +43,18 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-function LanguageSwitcher({ current }: { current: Locale }) {
-  const t = useTranslate();
-  const location = useLocation();
-  const redirectTo = location.pathname + location.search;
-
-  return (
-    <nav aria-label={t("nav.language")}>
-      <Form method="post" action="/locale">
-        <input type="hidden" name="redirectTo" value={redirectTo} />
-        <button
-          type="submit"
-          name="locale"
-          value="es"
-          aria-pressed={current === "es"}
-          disabled={current === "es"}
-        >
-          ES
-        </button>
-        <button
-          type="submit"
-          name="locale"
-          value="en"
-          aria-pressed={current === "en"}
-          disabled={current === "en"}
-        >
-          EN
-        </button>
-      </Form>
-    </nav>
-  );
-}
-
 export default function App({ loaderData }: Route.ComponentProps) {
+  const location = useLocation();
+  // The public funnel carries its own toggle inside the shared header; render
+  // the global one only elsewhere (authenticated app, auth flows) so a Visitor
+  // never sees two.
+  const showGlobalSwitcher = !isPublicPath(location.pathname);
+
   return (
     <LocaleProvider value={loaderData.locale}>
-      <LanguageSwitcher current={loaderData.locale} />
+      {showGlobalSwitcher ? (
+        <LanguageSwitcher current={loaderData.locale} />
+      ) : null}
       <Outlet />
     </LocaleProvider>
   );

@@ -1,12 +1,22 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import {
+  type RouteConfig,
+  index,
+  layout,
+  route,
+} from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
+  // Pre-login funnel — wrapped in the shared public header/layout.
+  layout("routes/public-layout.tsx", [
+    index("routes/home.tsx"),
+    route("ballroom", "routes/ballroom.tsx"),
+    route("nosotros", "routes/nosotros.tsx"),
+    route("comentarios", "routes/comentarios.tsx"),
+    route("contacto", "routes/contacto.tsx"),
+  ]),
   route("signup", "routes/signup.tsx"),
   route("login", "routes/login.tsx"),
   route("logout", "routes/logout.tsx"),
-  route("ballroom", "routes/ballroom.tsx"),
-  route("nosotros", "routes/nosotros.tsx"),
   route("forgot-password", "routes/forgot-password.tsx"),
   route("reset-password", "routes/reset-password.tsx"),
   route("account/password", "routes/account.password.tsx"),
