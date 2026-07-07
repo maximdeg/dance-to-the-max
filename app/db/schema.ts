@@ -294,6 +294,9 @@ export const comments = pgTable(
       { onDelete: "cascade" },
     ),
     body: text("body").notNull(),
+    // Moderation soft-hide: a hidden Comment stays in the table (an Admin can
+    // unhide) but drops out of the Subscriber-facing thread.
+    hidden: boolean("hidden").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -302,5 +305,31 @@ export const comments = pgTable(
     // Serves thread reads: all Comments for a Video, ordered by time.
     index("comments_video_created_idx").on(table.videoId, table.createdAt),
     index("comments_parent_idx").on(table.parentCommentId),
+  ],
+);
+
+/**
+ * A Subscriber's report flagging a Comment for Admin review. Unique per
+ * (Comment, reporter) so one Subscriber can't inflate a Comment's report count.
+ */
+export const commentReports = pgTable(
+  "comment_reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    commentId: uuid("comment_id")
+      .notNull()
+      .references(() => comments.id, { onDelete: "cascade" }),
+    reporterId: uuid("reporter_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("comment_reports_unique").on(
+      table.commentId,
+      table.reporterId,
+    ),
   ],
 );

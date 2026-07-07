@@ -58,6 +58,12 @@ export type Messages = {
   readonly "comments.you": string;
   readonly "comments.someone": string;
   readonly "comments.error": string;
+  readonly "comments.hide": string;
+  readonly "comments.unhide": string;
+  readonly "comments.remove": string;
+  readonly "comments.report": string;
+  readonly "comments.hidden": string;
+  readonly "comments.reported": string;
 };
 
 export type MessageKey = keyof Messages;
@@ -106,6 +112,12 @@ export const catalog: Record<Locale, Messages> = {
     "comments.you": "Vos",
     "comments.someone": "Suscriptor",
     "comments.error": "No se pudo completar la acción.",
+    "comments.hide": "Ocultar",
+    "comments.unhide": "Mostrar",
+    "comments.remove": "Eliminar",
+    "comments.report": "Reportar",
+    "comments.hidden": "(oculto)",
+    "comments.reported": "reportes",
   },
   en: {
     "app.name": "Dance To the Max",
@@ -150,6 +162,12 @@ export const catalog: Record<Locale, Messages> = {
     "comments.you": "You",
     "comments.someone": "Subscriber",
     "comments.error": "Couldn't complete that action.",
+    "comments.hide": "Hide",
+    "comments.unhide": "Unhide",
+    "comments.remove": "Remove",
+    "comments.report": "Report",
+    "comments.hidden": "(hidden)",
+    "comments.reported": "reports",
   },
 };
 
