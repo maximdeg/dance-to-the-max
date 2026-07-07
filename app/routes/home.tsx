@@ -46,10 +46,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           </Form>
         </>
       ) : (
-        <p>
-          <Link to="/login">{t("nav.login")}</Link> ·{" "}
-          <Link to="/signup">{t("nav.signup")}</Link>
-        </p>
+        <>
+          <p>{t("landing.lead")}</p>
+          <p>{t("landing.forWho")}</p>
+          <p>
+            <Link to="/signup">{t("cta.startFree")}</Link>
+            {" · "}
+            <Link to="/pricing">{t("cta.seePlans")}</Link>
+          </p>
+          <nav aria-label={t("landing.explore")}>
+            <Link to="/ballroom">{t("nav.ballroom")}</Link>
+            {" · "}
+            <Link to="/nosotros">{t("nav.about")}</Link>
+          </nav>
+          <p>
+            <Link to="/login">{t("nav.login")}</Link> ·{" "}
+            <Link to="/signup">{t("nav.signup")}</Link>
+          </p>
+        </>
       )}
     </main>
   );
