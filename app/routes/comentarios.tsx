@@ -36,10 +36,13 @@ export default function Comentarios() {
         ))}
       </ul>
 
-      <p>
-        <Link to="/signup">{t("cta.startFree")}</Link>
-        {" · "}
-        <Link to="/pricing">{t("cta.seePlans")}</Link>
+      <p className="cta-row">
+        <Link to="/signup" className="button button--primary">
+          {t("cta.startFree")}
+        </Link>
+        <Link to="/pricing" className="button">
+          {t("cta.seePlans")}
+        </Link>
       </p>
     </main>
   );
