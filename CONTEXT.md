@@ -91,6 +91,16 @@ _Avoid_: view, streaming
 A time-limited URL from the video provider authorizing playback of one Video.
 _Avoid_: token link
 
+### Engagement
+
+**Resume Point**:
+A Subscriber's last saved playback position (in seconds) on one Video — used to resume where they left off. One per Subscriber per Video.
+_Avoid_: bookmark (a manual marker — a later feature), history
+
+**Progress**:
+The derived per-Video state — unstarted / in-progress / watched — and its per-Dance/Level rollup. Computed from the Resume Point, never stored.
+_Avoid_: completion, achievement
+
 ### Public site
 
 **Testimonial**:

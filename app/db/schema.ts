@@ -278,6 +278,37 @@ export const subscriptions = pgTable(
 );
 
 /**
+ * A Subscriber's last playback position on a Video — the Resume Point. Exactly
+ * one row per (Account, Video) via the unique index; `saveResumePoint` upserts
+ * against it. `watched` is set once ~90% is reached (or manually). The derived
+ * Progress state (unstarted / in-progress / watched) is computed from this row,
+ * never stored: no row → unstarted; position > 0 and not watched → in-progress.
+ */
+export const resumePoints = pgTable(
+  "resume_points",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    positionSeconds: integer("position_seconds").notNull().default(0),
+    watched: boolean("watched").notNull().default(false),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("resume_points_account_video_unique").on(
+      table.accountId,
+      table.videoId,
+    ),
+  ],
+);
+
+/**
  * A public message on a Video. A top-level Comment (parent_comment_id NULL) is
  * posted by an entitled Subscriber; an Admin reply is a child row pointing at
  * the Comment it answers — one level only, no deeper threading. Posting and

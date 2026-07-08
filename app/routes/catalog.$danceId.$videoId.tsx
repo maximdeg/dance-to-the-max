@@ -1,7 +1,8 @@
 import { Effect, Either } from "effect";
-import { Form, Link } from "react-router";
+import { Form, Link, type ShouldRevalidateFunctionArgs } from "react-router";
 import { requireAccount } from "~/auth/auth.server";
 import { isStaff } from "~/auth/roles";
+import { VideoPlayer } from "~/components/VideoPlayer";
 import { pick } from "~/i18n/content";
 import { useLocale, useTranslate } from "~/i18n/context";
 import { runtime } from "~/runtime.server";
@@ -14,11 +15,25 @@ import {
   reportComment,
   setCommentHidden,
 } from "~/services/Comments";
+import { saveResumePoint } from "~/services/Engagement";
 import { getPlayback } from "~/services/Playback";
 import type { Route } from "./+types/catalog.$danceId.$videoId";
 
 export function meta() {
   return [{ title: "Watch · Dance To the Max" }];
+}
+
+/**
+ * The Resume Point pings (`intent=resume`) fire every ~15s while watching; they
+ * must not re-run the loader (which would re-sign the URL and reload the
+ * thread). Every other submission revalidates as usual.
+ */
+export function shouldRevalidate({
+  formData,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  if (formData?.get("intent") === "resume") return false;
+  return defaultShouldRevalidate;
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -60,6 +75,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   return {
     danceId: params.danceId,
+    videoId: params.videoId,
     locked: !entitled,
     video: entitled
       ? {
@@ -86,6 +102,20 @@ export async function action({ request, params }: Route.ActionArgs) {
   const account = await requireAccount(request);
   const form = await request.formData();
   const intent = String(form.get("intent") ?? "");
+
+  if (intent === "resume") {
+    const positionSeconds = Number(form.get("positionSeconds") ?? 0);
+    const durationSeconds = Number(form.get("durationSeconds") ?? 0);
+    await runtime.runPromise(
+      saveResumePoint({
+        accountId: account.id,
+        videoId: params.videoId,
+        positionSeconds,
+        durationSeconds,
+      }).pipe(Effect.either),
+    );
+    return { error: false as const };
+  }
 
   if (intent === "comment") {
     const body = String(form.get("body") ?? "").trim();
@@ -222,9 +252,11 @@ export default function WatchVideo({
       {video && playback ? (
         <>
           <h1>{pick(locale, video.titleEs, video.titleEn)}</h1>
-          <video controls src={playback.url}>
-            {t("watch.unsupported")}
-          </video>
+          <VideoPlayer
+            videoId={loaderData.videoId}
+            src={playback.url}
+            unsupportedLabel={t("watch.unsupported")}
+          />
           {description ? <p>{description}</p> : null}
           <p>
             <small>

@@ -40,6 +40,13 @@ Glossary for v1 (lean validation MVP). The terse canonical version for tooling l
 | **Playback**   | Streaming a Video to an entitled Subscriber via a Signed URL.                        | streaming, view  |
 | **Signed URL** | A time-limited URL from the video provider authorizing playback of one Video.        | token link       |
 
+## Engagement
+
+| Term             | Definition                                                                                              | Aliases to avoid            |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Resume Point** | A Subscriber's last saved playback position (seconds) on one Video; one per Subscriber per Video.        | bookmark, history           |
+| **Progress**     | Derived per-Video state (unstarted / in-progress / watched) + per-Dance/Level rollup; computed, not stored. | completion, achievement     |
+
 ## Public site
 
 | Term               | Definition                                                                                                             | Aliases to avoid            |
