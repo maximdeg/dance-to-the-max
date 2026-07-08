@@ -1,35 +1,288 @@
+/* Dance To the Max — app styles.
+   Design system ported from the prototype: neumorphism (soft UI), dark mode,
+   cyan/navy brand, Archivo Narrow titles + Inter body. Surfaces are frosted
+   translucent with paired light(top-left)+dark(bottom-right) shadows over a
+   deep navy gradient base with drifting cyan/navy glows. */
+
 :root {
-  color-scheme: light dark;
-  font-family: Inter, system-ui, sans-serif;
-  /* Public-site brand accents (PRD #20: cyan / navy). Used sparingly on the
-     funnel; easy to retune when the full theme lands. */
-  --accent: #15b9da;
-  --accent-ink: #00204b;
+  color-scheme: dark;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+
+  --cyan: #15b9da;
+  --navy: #00204b;
+  --ink: #eef2f6;
+  --gray: #6f7a88;
+  --muted: #9aa6b5;
+  --paper: #0a1c33;
+
+  /* legacy aliases used by earlier funnel rules */
+  --accent: var(--cyan);
+  --accent-ink: var(--navy);
+
+  --nm-dark: rgba(0, 0, 0, 0.55);
+  --nm-light: rgba(255, 255, 255, 0.06);
+  --nm-raised: 6px 6px 14px var(--nm-dark), -6px -6px 14px var(--nm-light);
+  --nm-raised-sm: 4px 4px 9px var(--nm-dark), -4px -4px 9px var(--nm-light);
+  --nm-inset: inset 5px 5px 10px var(--nm-dark),
+    inset -5px -5px 10px var(--nm-light);
+  --nm-inset-sm: inset 3px 3px 6px var(--nm-dark),
+    inset -3px -3px 6px var(--nm-light);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --glass-edge: rgba(255, 255, 255, 0.08);
+  --surface: rgba(13, 32, 58, 0.5);
+  --surface-strong: rgba(13, 32, 58, 0.66);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  padding: 2rem;
+  min-height: 100vh;
+  color: var(--ink);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background: linear-gradient(160deg, #06121f 0%, #081a30 48%, #030912 100%);
+  background-attachment: fixed;
 }
 
-/* Shared pre-login header (see PublicHeader). Mobile-first: the menu collapses
-   behind the toggle button and expands via `data-open`; at the breakpoint the
-   toggle hides and the menu is always laid out inline. */
+/* bold colorful glows on a drifting layer over the dark base */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 820px at 8% 4%, rgba(0, 54, 120, 0.85), transparent 58%),
+    radial-gradient(1050px 780px at 96% 6%, rgba(21, 185, 218, 0.55), transparent 55%),
+    radial-gradient(1000px 1000px at 48% 122%, rgba(0, 40, 92, 0.72), transparent 60%),
+    radial-gradient(780px 640px at 82% 68%, rgba(21, 185, 218, 0.34), transparent 60%);
+  animation: bgdrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes bgdrift {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1.05) rotate(-1deg);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.14) rotate(1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Archivo Narrow", "Inter", sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+hr {
+  border: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: var(--nm-inset-sm);
+  margin: 1.5rem 0;
+}
+
+/* ---- form controls (inset soft-UI) ----------------------------------- */
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  box-shadow: var(--nm-inset-sm);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray);
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0.75rem 0 0.25rem;
+}
+
+/* generic buttons default to the ghost soft-UI look */
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--ink);
+  background: var(--surface-strong);
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+  padding: 0.6rem 1.1rem;
+  box-shadow: var(--nm-raised-sm);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: box-shadow 0.15s, color 0.15s, filter 0.15s;
+}
+
+button:hover {
+  color: var(--cyan);
+}
+
+button:active {
+  box-shadow: var(--nm-inset-sm);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* brand mark: cyan tile with the studio initial */
+.logo-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--cyan);
+  color: #04121f;
+  box-shadow: var(--nm-raised-sm);
+  font-family: "Archivo Narrow", sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* ---- shared button classes (funnel CTAs) ----------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.3rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--surface-strong);
+  box-shadow: var(--nm-raised-sm);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: box-shadow 0.15s, color 0.15s, filter 0.15s;
+}
+
+.button:hover {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.button:active {
+  box-shadow: var(--nm-inset-sm);
+}
+
+.button--primary {
+  background: var(--cyan);
+  color: #04121f;
+}
+
+.button--primary:hover {
+  color: #04121f;
+  filter: brightness(1.05);
+}
+
+/* ---- public header --------------------------------------------------- */
+
 .public-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  margin-bottom: 1.5rem;
+  background: rgba(6, 16, 31, 0.62);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid var(--glass-edge);
+}
+
+.public-header__inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
 }
 
 .public-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   margin-right: auto;
+  font-family: "Archivo Narrow", sans-serif;
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.public-header__brand:hover {
+  text-decoration: none;
+  color: var(--ink);
 }
 
 .public-header__menu {
@@ -51,6 +304,39 @@ body {
   gap: 1rem;
 }
 
+.public-header__nav a,
+.public-header__login {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.public-header__nav a:hover,
+.public-header__login:hover {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.public-header__cta {
+  padding: 0.48rem 0.95rem;
+  border-radius: 10px;
+  background: var(--cyan);
+  color: #04121f;
+  font-weight: 600;
+  box-shadow: var(--nm-raised-sm);
+}
+
+.public-header__cta:hover {
+  text-decoration: none;
+  filter: brightness(1.05);
+}
+
+/* the ES/EN switcher inside the header */
+.public-header__actions form {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
 @media (min-width: 48rem) {
   .public-header__toggle {
     display: none;
@@ -62,49 +348,90 @@ body {
     flex-direction: row;
     align-items: center;
     gap: 1.5rem;
+    margin-left: auto;
   }
 }
 
-.public-header :focus-visible {
-  outline: 2px solid;
-  outline-offset: 2px;
-}
-
-/* ---- Home funnel (see HomeFunnel) ------------------------------------- */
+/* ---- home funnel ----------------------------------------------------- */
 
 .hero,
 .valueprop,
 .sampler,
 .plans,
 .testimonials,
-.closing-cta {
+.closing-cta,
+.ballroom-dances {
   margin: 3rem 0;
 }
 
-.button {
-  display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--accent-ink);
-  border-radius: 999px;
-  font-weight: 600;
-  text-decoration: none;
-  color: inherit;
-}
-
-.button--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #00204b;
-}
-
 .hero {
+  position: relative;
   display: grid;
   gap: 2rem;
   align-items: center;
+  overflow: hidden;
+  padding: 3rem 2rem;
+  border-radius: 32px;
+  box-shadow: var(--nm-raised);
+  background:
+    radial-gradient(55% 55% at 12% 18%, rgba(21, 185, 218, 0.34), transparent 62%),
+    radial-gradient(52% 56% at 88% 10%, rgba(0, 96, 180, 0.44), transparent 62%),
+    radial-gradient(50% 62% at 80% 94%, rgba(21, 185, 218, 0.22), transparent 66%),
+    linear-gradient(165deg, #0b2340 0%, #071a30 55%, #04101f 100%);
+}
+
+/* slowly rotating conic sweep → shimmer */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  width: 170%;
+  height: 170%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 0deg,
+    rgba(21, 185, 218, 0.2),
+    rgba(0, 32, 75, 0.02),
+    rgba(21, 185, 218, 0.16),
+    rgba(0, 96, 180, 0.14),
+    rgba(21, 185, 218, 0.2)
+  );
+  mix-blend-mode: screen;
+  animation: heroSpin 32s linear infinite;
+}
+
+@keyframes heroSpin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero::after {
+    animation: none;
+  }
+}
+
+.hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  margin: 0 0 1rem;
+  background: linear-gradient(102deg, var(--cyan) 0%, #eaf6fb 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero__lead {
   font-size: 1.15rem;
+  color: var(--muted);
   max-width: 34rem;
 }
 
@@ -112,73 +439,86 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  margin-top: 1.5rem;
 }
 
+/* hero media placeholder — a pressed, branded frame for the photo/reel */
 .hero__media {
-  aspect-ratio: 4 / 3;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--accent-ink), var(--accent));
-  background-size: 200% 200%;
-  animation: hero-shimmer 8s ease-in-out infinite;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  border: 1px solid var(--glass-edge);
+  background:
+    radial-gradient(60% 60% at 30% 25%, rgba(21, 185, 218, 0.35), transparent 60%),
+    linear-gradient(140deg, #123a6b, #062a5c);
+  box-shadow: var(--nm-inset);
+  display: grid;
+  place-items: center;
 }
 
-@keyframes hero-shimmer {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+.hero__media::after {
+  content: "🎞️";
+  font-size: 2rem;
+  opacity: 0.8;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero__media {
-    animation: none;
-  }
+.valueprop p {
+  color: var(--muted);
+  max-width: 48rem;
 }
 
+/* grids of cards */
 .sampler__grid,
 .plans__grid,
 .testimonials__grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
+  margin: 1.25rem 0 0;
   padding: 0;
   list-style: none;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+/* frosted neumorphic card, used for dances / plans / testimonials */
+.dance-card,
+.plan-card,
+.testimonial {
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-edge);
+  border-radius: 20px;
+  box-shadow: var(--nm-raised);
 }
 
 .dance-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
+  gap: 0.6rem;
   padding: 1rem;
-  border: 1px solid var(--accent);
-  border-radius: 12px;
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
   height: 100%;
+  transition: transform 0.18s;
 }
 
-.dance-card__thumb,
-.dance-chip__thumb {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-ink), var(--accent));
+.dance-card:hover {
+  transform: translateY(-3px);
+  text-decoration: none;
+}
+
+/* dance thumbnail: raised cyan→navy tile with the name's initial */
+.dance-card__thumb {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  background: linear-gradient(140deg, var(--cyan), #062a5c);
+  box-shadow: var(--nm-raised-sm);
   color: #fff;
+  font-family: "Archivo Narrow", sans-serif;
   font-weight: 700;
-}
-
-.dance-chip__thumb {
-  width: 1.5rem;
-  height: 1.5rem;
-  margin-right: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 1.9rem;
 }
 
 .dance-card__name {
@@ -187,95 +527,120 @@ body {
 
 .dance-card__history {
   font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.ballroom-dances {
-  margin: 2rem 0;
-}
-
-.contact-info dt {
-  font-weight: 600;
-  margin-top: 1rem;
-}
-
-.contact-info dd {
-  margin-left: 0;
+  color: var(--muted);
 }
 
 .badge {
-  font-size: 0.8rem;
-  padding: 0.15rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  border: 1px solid var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(21, 185, 218, 0.18);
+  color: #8fe3f4;
 }
 
 .badge--save {
-  display: inline-block;
-  border-color: var(--accent-ink);
-  font-weight: 600;
+  background: var(--cyan);
+  color: #04121f;
 }
+
+/* ---- tier comparison ------------------------------------------------- */
 
 .plans__toggle {
   display: inline-flex;
-  gap: 0;
   margin: 1rem 0;
-  border: 1px solid var(--accent);
+  padding: 0.25rem;
   border-radius: 999px;
-  overflow: hidden;
+  background: var(--surface-strong);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--nm-inset-sm);
 }
 
 .plans__toggle button {
-  border: 0;
-  padding: 0.5rem 1.25rem;
+  border: none;
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
   background: transparent;
-  color: inherit;
-  cursor: pointer;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.plans__toggle button:hover {
+  color: var(--ink);
 }
 
 .plans__toggle button[aria-pressed="true"] {
-  background: var(--accent);
-  color: #00204b;
+  background: var(--cyan);
+  color: #04121f;
   font-weight: 600;
+  box-shadow: var(--nm-raised-sm);
 }
 
 .plan-card {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1.25rem;
-  border: 1px solid var(--accent);
-  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.plan-card h3 {
+  font-size: 1.4rem;
 }
 
 .plan-card__price {
-  font-size: 1.75rem;
+  font-family: "Archivo Narrow", sans-serif;
+  font-size: 2.2rem;
   font-weight: 700;
   margin: 0;
 }
 
 .plan-card__cadence {
+  font-family: "Inter", sans-serif;
   font-size: 1rem;
   font-weight: 400;
-  opacity: 0.7;
+  color: var(--muted);
+}
+
+.plan-card__includes {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0;
 }
 
 .plan-card__dances {
   list-style: none;
   padding: 0;
-  margin: 0.25rem 0 0.75rem;
+  margin: 0.25rem 0 1rem;
 }
 
 .plan-card__dances li {
   display: flex;
   align-items: center;
-  padding: 0.15rem 0;
+  padding: 0.2rem 0;
+  font-size: 0.92rem;
 }
 
+.dance-chip__thumb {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+  border-radius: 6px;
+  background: linear-gradient(140deg, var(--cyan), #062a5c);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ---- testimonials ---------------------------------------------------- */
+
 .testimonial {
-  padding: 1.25rem;
-  border: 1px solid var(--accent);
-  border-radius: 12px;
+  padding: 1.5rem;
 }
 
 .testimonial blockquote {
@@ -284,15 +649,35 @@ body {
 }
 
 .testimonial cite {
-  opacity: 0.75;
+  color: var(--muted);
+  font-style: normal;
 }
 
 .closing-cta {
   text-align: center;
 }
 
+/* ---- ballroom + contact --------------------------------------------- */
+
+.ballroom-dances .dance-card__history {
+  margin: 0;
+}
+
+.contact-info dt {
+  font-family: "Archivo Narrow", sans-serif;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 1rem;
+}
+
+.contact-info dd {
+  margin-left: 0;
+  color: var(--muted);
+}
+
 @media (min-width: 48rem) {
   .hero {
     grid-template-columns: 1.1fr 0.9fr;
+    padding: 4rem 3rem;
   }
 }
