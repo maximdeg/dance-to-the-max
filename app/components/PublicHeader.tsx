@@ -26,45 +26,54 @@ export function PublicHeader({
 
   return (
     <header className="public-header">
-      <Link to="/" className="public-header__brand" onClick={close}>
-        {t("app.name")}
-      </Link>
+      <div className="public-header__inner">
+        <Link to="/" className="public-header__brand" onClick={close}>
+          <span className="logo-mark" aria-hidden="true">
+            D
+          </span>
+          {t("app.name")}
+        </Link>
 
-      <button
-        type="button"
-        className="public-header__toggle"
-        aria-expanded={open}
-        aria-controls="public-menu"
-        onClick={() => setOpen((o) => !o)}
-      >
-        {t("nav.menu")}
-      </button>
+        <button
+          type="button"
+          className="public-header__toggle"
+          aria-expanded={open}
+          aria-controls="public-menu"
+          onClick={() => setOpen((o) => !o)}
+        >
+          {t("nav.menu")}
+        </button>
 
-      <div id="public-menu" className="public-header__menu" data-open={open}>
-        <nav aria-label={t("nav.primary")} className="public-header__nav">
-          {publicNavLinks.map((link) => (
-            <Link key={link.to} to={link.to} onClick={close}>
-              {t(link.labelKey)}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="public-header__actions">
-          <LanguageSwitcher current={current} />
-          {authenticated ? null : (
-            <>
-              <Link
-                to="/login"
-                className="public-header__login"
-                onClick={close}
-              >
-                {t("nav.ingresar")}
+        <div id="public-menu" className="public-header__menu" data-open={open}>
+          <nav aria-label={t("nav.primary")} className="public-header__nav">
+            {publicNavLinks.map((link) => (
+              <Link key={link.to} to={link.to} onClick={close}>
+                {t(link.labelKey)}
               </Link>
-              <Link to="/signup" className="public-header__cta" onClick={close}>
-                {t("cta.startFree")}
-              </Link>
-            </>
-          )}
+            ))}
+          </nav>
+
+          <div className="public-header__actions">
+            <LanguageSwitcher current={current} />
+            {authenticated ? null : (
+              <>
+                <Link
+                  to="/login"
+                  className="public-header__login"
+                  onClick={close}
+                >
+                  {t("nav.ingresar")}
+                </Link>
+                <Link
+                  to="/signup"
+                  className="public-header__cta"
+                  onClick={close}
+                >
+                  {t("cta.startFree")}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>
